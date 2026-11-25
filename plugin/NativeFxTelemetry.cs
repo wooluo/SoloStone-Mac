@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -51,7 +52,7 @@ internal static class NativeFxTelemetry
     internal static void Initialize(Harmony harmony, ManualLogSource logger, string run, Func<bool> enabled, string reports)
     {
         log = logger; runId = run; configured = enabled; patcher = harmony;
-        records = new FxTelemetryLog(reports + @"\fx-telemetry.tsv");
+        records = new FxTelemetryLog(Path.Combine(reports, "fx-telemetry.tsv"));
         InstallHooks();
     }
 

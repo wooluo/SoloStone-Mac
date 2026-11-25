@@ -395,9 +395,12 @@ namespace SoloStone
         internal static Payload FromMap(Dictionary<string,object> map) => new Payload { Schema=PlainJson.Int(map,"schema"), BepInExVersion=PlainJson.Str(map,"bepInExVersion"),
             DoorstopVersion=PlainJson.Str(map,"doorstopVersion"), SourceRevision=PlainJson.Str(map,"sourceRevision"), EngineSha256=PlainJson.Str(map,"engineSha256"),
             PluginSha256=PlainJson.Str(map,"pluginSha256"), Files=PlainJson.Strings(map,"files") };
+        // The file that carries Doorstop into the game: its proxy DLL on Windows, its library on macOS. A payload names the one its copy runs.
+        public static string HasInjector(IDictionary<string,string> files) => files!=null && files.ContainsKey("winhttp.dll") ? "winhttp.dll"
+            : files!=null && files.ContainsKey("libdoorstop.dylib") ? "libdoorstop.dylib" : null;
         public void Verify(string folder) {
             if (Schema!=1 || string.IsNullOrEmpty(DoorstopVersion) || string.IsNullOrEmpty(SourceRevision)
-                || Files==null || !Files.ContainsKey("winhttp.dll") || !Files.ContainsKey("doorstop_config.ini")
+                || Files==null || HasInjector(Files)==null || !Files.ContainsKey("doorstop_config.ini")
                 || !Files.ContainsKey("client.config") || !Files.ContainsKey("BepInEx/core/BepInEx.dll")
                 || !Files.ContainsKey("BepInEx/core/BepInEx.Preloader.dll") || !Files.ContainsKey("BepInEx/unstripped_corlib/mscorlib.dll") || !Files.ContainsKey("BepInEx/core/0Harmony.dll")
                 || !Files.ContainsKey(PublicNames.PluginPayloadPath) || !Files.ContainsKey("BepInEx/plugins/SabberStoneCore.dll")

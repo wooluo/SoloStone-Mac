@@ -274,7 +274,7 @@ internal sealed class NativeAchievementStep : ILocalAchievementStep
             sentinel.Owner = this; sentinel.Token = expectedToken; sentinel.Expected = toast;
             InspectOwnedSubtree(toast.gameObject);
             toast.Initialize(new AchievementDataModel {
-                Name = presentation.Caption, Tier = 1, NextTierID = 0,
+                Name = LocalText.Get(presentation.Caption), Tier = 1, NextTierID = 0,
                 Status = (AchievementManager.AchievementStatus)2,
                 Progress = 1, Quota = 1,
                 DisplayMode = (AchievementManager.AchievementDisplayMode)0,

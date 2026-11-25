@@ -100,6 +100,10 @@
   <ItemGroup>
     <EmbeddedResource Include="../facts/violet-hold-2026-09.*.json" LogicalName="SoloStone.Facts.%(Filename)%(Extension)" />
   </ItemGroup>
+  <!-- SoloStone's own text in the client's language (plugin/LocalText.cs): plugin/text/ui.<locale>.json, one per language. -->
+  <ItemGroup>
+    <EmbeddedResource Include="text/*.json" LogicalName="SoloStone.Text.%(Filename)%(Extension)" />
+  </ItemGroup>
   <!-- NPC World v1 data (docs/superpowers/specs/2026-10-25-npc-world-v1-design.md); read by NpcWorldBoot only. -->
   <ItemGroup>
     <EmbeddedResource Condition="'$(EngineSource)' != 'true'" Include="../engine/SabberStoneCore/resources/Data/OfflinePoolCatalog.xml" LogicalName="SoloStone.Npc.OfflinePoolCatalog.xml" />

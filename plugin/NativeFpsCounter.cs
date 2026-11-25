@@ -7,8 +7,8 @@ using MiniJSON;
 using UnityEngine;
 
 // Options > SoloStone Options > "FPS Counter" checkbox (NativeOptionsPanels builds the row and hands it to Attach) and the overlay it
-// shows: one IMGUI label in the top-right corner (FpsCounterLayout), directly under the always-on brand label (NativeBrandLabel), drawn
-// from the plugin's OnGUI so it covers every scene, in a match too. It takes no input (a Label never does) and only reads
+// shows: one IMGUI label in the top-right corner (FpsCounterLayout), directly under the brand label while that is on (NativeBrandLabel),
+// drawn from the plugin's OnGUI so it covers every scene, in a match too. It takes no input (a Label never does) and only reads
 // Time.unscaledDeltaTime: no frame-rate, VSync or quality setting is touched. Off, Tick is one bool test and Draw returns at the top.
 // The setting applies at once and persists in the BepInEx config ([Display] FpsCounter).
 // Also home to the Options overlap helpers (Overlaps, Body) the Options planks are placed and checked with (NativeOptionsPanels).

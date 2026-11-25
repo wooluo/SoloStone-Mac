@@ -23,8 +23,10 @@ internal static class NativeWelcomeText
     // Native reward scroll ("You've received"), shown after OK. Its dismiss control gets a reviewed id.
     internal const string ScrollDoneId = "welcome.scroll.done";
     internal const string ScrollTitle = "Welcome gift";
+    // Shown in the client's language (LocalText); the amount and the card list come from the saved welcome receipt.
     internal static string ScrollDescription(int kitGoldCap, string cards = null) =>
-        "Deck kit: any ready-made deck up to " + Amount(kitGoldCap) + " gold." + (string.IsNullOrEmpty(cards) ? "" : "\n\nCards:\n" + cards);
+        LocalText.Format("Deck kit: any ready-made deck up to {0} gold.", Amount(kitGoldCap))
+        + (string.IsNullOrEmpty(cards) ? "" : LocalText.Get("\n\nCards:\n") + cards);
 
     internal enum ScrollItemKind { StandardPacks, Gold, Dust }
 

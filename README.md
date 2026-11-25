@@ -102,7 +102,8 @@ app and your account are never touched.
 ## What to expect
 
 - **This is an alpha.** It has rough edges and has been tested on few machines.
-- **Windows only for now**, tested with Hearthstone client 37.0.0.254477. Steam Deck and Linux are not supported yet.
+- **Windows**, tested with Hearthstone client 37.0.0.254477. **macOS** has a script launcher instead of the window: see
+  [MACOS.md](docs/MACOS.md), tried with client 37.0.255790 on Apple Silicon. Steam Deck and Linux are not supported yet.
 - **Windows asks for permission once**, to add the firewall rules.
 - **Hearthstone updates:**
 

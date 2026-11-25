@@ -33,6 +33,8 @@ internal static class NativeLanguageOption
     {
         log = logger;
         LocalNativeText.RunningLocale = () => Running;
+        // SoloStone's own text follows the client's language (LocalText), asked whenever text is shown.
+        LocalText.Locale = () => LocalNativeText.ClientLocale();
         try
         {
             settings = new LanguageSettings(file);

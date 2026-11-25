@@ -220,7 +220,7 @@ internal sealed class LocalAchievementFeats
                     var feat = new LocalFeat {
                         Id = row.Id, Name = definition.Name, Summary = row.Summary, Condition = definition.Condition,
                         Points = row.Points, Reward = definition.Reward, CategoryId = category.Id, SubcategoryId = sub.Id,
-                        RewardText = definition.Reward.GrantKindCount == 0 ? row.Points + " Feats points"
+                        RewardText = definition.Reward.GrantKindCount == 0 ? LocalText.Format("{0} Feats points", row.Points)
                             : LocalAchievementPresentation.SavedRewardText(LocalAchievementGrantReceipt.FromCatalog(row.Id)),
                         NativeId = AchievementIdBase + CatalogIndex(row.Id), SortOrder = order++, Earned = earned, Quota = quota,
                         Progress = earned ? quota : Math.Max(0, Math.Min(quota, RawProgress(row.Id, state.Career))),
@@ -253,14 +253,22 @@ internal sealed class LocalAchievementFeats
     private static LocalFeatCard Card(string id, int premium, int copies) => new LocalFeatCard {
         CardId = id, DbfId = Definition(id)?.AssetId ?? 0, Premium = premium, Copies = copies
     };
-    private static string CardText(LocalFeatCard card) => (card.Premium == 0 ? "" : new[] { "", "Golden ", "Diamond ", "Signature " }[card.Premium])
-        + (Definition(card.CardId)?.Name ?? LocalClassRewards.Rewards.FirstOrDefault(row => row.CardId == card.CardId)?.Name ?? card.CardId) + (card.Copies > 1 ? " x" + card.Copies : "");
+    // A generated row's sentences have holes (a level, a class, a card), so LocalText builds them here in the running language; with no
+    // language they are the English the suites pin. The table's whole strings (categories, section names, a catalog row's name and
+    // summary) stay English in this projection and are translated where the client models get them (NativeAchievements).
+    private static string CardText(LocalFeatCard card)
+    {
+        string name = Definition(card.CardId)?.Name ?? LocalClassRewards.Rewards.FirstOrDefault(row => row.CardId == card.CardId)?.Name ?? card.CardId;
+        string text = card.Premium == 1 ? LocalText.Format("Golden {0}", name) : card.Premium == 2 ? LocalText.Format("Diamond {0}", name)
+            : card.Premium == 3 ? LocalText.Format("Signature {0}", name) : name;
+        return card.Copies > 1 ? text + " x" + card.Copies : text;
+    }
     private static LocalFeat Track(int id, string key, string name, string condition, int progress, int quota, bool earned,
         IEnumerable<LocalFeatCard> cards = null, LocalAchievementReward reward = null, long date = 0)
     {
         var items = (cards ?? Enumerable.Empty<LocalFeatCard>()).ToArray();
         string text = items.Length > 0 ? string.Join(", ", items.Select(CardText))
-            : reward?.Dust > 0 ? reward.Dust + " dust" : reward?.HeroSkinId ?? "Portrait";
+            : reward?.Dust > 0 ? LocalText.Format("{0} dust", reward.Dust) : reward?.HeroSkinId ?? LocalText.Get("Portrait");
         return new LocalFeat { NativeId = id, Id = key, Name = name, Summary = condition + "\n" + text, Condition = condition,
             Progress = Math.Max(0, Math.Min(Math.Max(0, quota), progress)), Quota = Math.Max(0, quota),
             Earned = earned, Generated = true, Cards = items, Reward = reward ?? new LocalAchievementReward(),
@@ -276,7 +284,8 @@ internal sealed class LocalAchievementFeats
         int combined = LocalCoreProgression.NeutralBaseCombinedLevel + LocalCoreProgression.Heroes.Sum(hero => LocalCoreProgression.Level(xp[hero]) - 1);
         for (int index = 0; index <= LocalCoreProgression.Heroes.Length; index++) {
             string hero = index < LocalCoreProgression.Heroes.Length ? LocalCoreProgression.Heroes[index] : "";
-            // Sentences below are SoloStone English; only the standalone title follows the game language.
+            // Sentences below are SoloStone's own English (LocalText: a language with a table answers them); only the standalone
+            // title follows the client's language, whatever that language is.
             string english = hero == "" ? "All classes" : LocalCoreProgression.ClassName(hero);
             string name = hero == "" ? english : NativeStrings.ClassName(english);
             var levels = new List<LocalFeat>();
@@ -285,8 +294,7 @@ internal sealed class LocalAchievementFeats
                 // Earned by the level reached, not by owning the group's cards: a shop purchase or a #87 Classic reprint grant
                 // can own a level's Core cards long before the level.
                 bool earned = (hero == "" ? combined : LocalCoreProgression.Level(xp[hero])) >= level;
-                levels.Add(Track(LevelIdBase + index * 100 + level, "level:" + index + ":" + level, "Level " + level,
-                    hero == "" ? "Reach combined class level " + level + "." : "Reach " + english + " level " + level + ".",
+                levels.Add(Track(LevelIdBase + index * 100 + level, "level:" + index + ":" + level, LevelName(level), LevelCondition(hero, level),
                     hero == "" ? combined : xp[hero], hero == "" ? level : LocalCoreProgression.LevelThresholds[level - 1], earned,
                     group.Select(card => Card(card.Id, 0, card.Copies)), date: GrantDate(profile,
                         match => group.Any(card => match.UnlockedCardIds?.Contains(card.Id) == true))));
@@ -300,7 +308,7 @@ internal sealed class LocalAchievementFeats
                     bool earned = claimed.Any(row => row.Hero == hero && row.Level == scheduled.Level);
                     if (!earned) profile.ClassRewardGrants.Add(grant);
                     levels.Add(Track(LevelIdBase + index * 100 + scheduled.Level, "level:" + index + ":" + scheduled.Level,
-                        "Level " + scheduled.Level, "Reach " + english + " level " + scheduled.Level + ".", xp[hero],
+                        LevelName(scheduled.Level), LevelCondition(hero, scheduled.Level), xp[hero],
                         LocalCoreProgression.LevelThresholds[scheduled.Level - 1], earned,
                         grant.Dust == 0 ? new[] { Card(grant.CardId, grant.Premium, grant.Copies) } : null,
                         new LocalAchievementReward(dust: grant.Dust), Math.Max(UnixSeconds(grant.GrantedUtc), GrantDate(profile,
@@ -313,12 +321,13 @@ internal sealed class LocalAchievementFeats
                     var portrait = LocalClassRewards.Portraits.Single(row => row.Hero == hero);
                     string card = grant?.CardId ?? (kind == "golden" ? hero : portrait.Honored);
                     var feat = Track(LevelIdBase + index * 100 + (kind == "golden" ? 61 : 62), "portrait:" + hero + ":" + kind,
-                        (kind == "golden" ? "Golden hero" : "Honored portrait"), "Win Ranked matches as " + english + ".", wins,
+                        (kind == "golden" ? "Golden hero" : "Honored portrait"), LocalText.Format("Win Ranked matches as {0}.", ClassInSentence(english)), wins,
                         kind == "golden" ? LocalClassRewards.GoldenPortraitWins : LocalClassRewards.HonoredPortraitWins,
                         grant != null, reward: new LocalAchievementReward(heroSkinId: card), date: Math.Max(UnixSeconds(grant?.GrantedUtc), GrantDate(profile,
                             match => match.PortraitGrants?.Any(row => row.Hero == hero && row.Kind == kind) == true)));
                     feat.RewardPremium = kind == "golden" ? 1 : 0;
-                    feat.RewardText = (kind == "golden" ? "Golden " : "Honored ") + english + " portrait";
+                    feat.RewardText = kind == "golden" ? LocalText.Format("Golden {0} portrait", ClassInSentence(english))
+                        : LocalText.Format("Honored {0} portrait", ClassInSentence(english));
                     feat.Summary = feat.Condition + "\n" + feat.RewardText;
                     levels.Add(feat);
                 }
@@ -364,11 +373,11 @@ internal sealed class LocalAchievementFeats
                 bool earned = next == null;
                 next = next ?? tiers.Last();
                 var feat = Track(checked(MasteryIdBase + card.AssetId * 4 + next.Premium), "mastery:" + id,
-                    card.Name + " — " + new[] { "", "Golden", "Diamond", "Signature" }[next.Premium],
-                    "Win with this card in your personal Ranked or Casual deck (at least four turns; no concessions).",
+                    MasteryName(card.Name, next.Premium),
+                    LocalText.Get("Win with this card in your personal Ranked or Casual deck (at least four turns; no concessions)."),
                     next.Wins, next.RequiredWins, earned, new[] { Card(id, next.Premium, LocalCrafting.Playset(id)) },
                     date: dates.TryGetValue(id, out long date) ? date : 0);
-                feat.Summary += "\n" + next.Wins + " / " + next.RequiredWins + " wins";
+                feat.Summary += "\n" + LocalText.Format("{0} / {1} wins", next.Wins, next.RequiredWins);
                 mastery.Add(feat);
             }
             AddTrack(categories.Single(row => row.Id == "collection"), all, 12 + index, "mastery:" + index,
@@ -478,13 +487,28 @@ internal sealed class LocalAchievementFeats
         DateTimeOffset.TryParse(utc, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset when)
             ? when.ToUnixTimeSeconds() : 0;
 
-    // Full text for the native inspection popup: condition, reward, progress and eligibility.
+    // Full text for the native inspection popup: condition, reward, progress and eligibility, in the running language.
     internal string Detail(LocalFeat feat)
     {
-        string progress = feat.Quota > 1 ? "\nProgress: " + feat.Progress + " / " + feat.Quota + (feat.Id.StartsWith("mastery:", StringComparison.Ordinal) ? " wins" : "") : "";
-        return feat.Condition + progress + "\nReward: " + feat.RewardText + "\n"
-            + (feat.Generated ? "Granted automatically through progression. No claim needed." : Eligibility(feat.Id));
+        string progress = feat.Quota > 1 ? LocalText.Format("\nProgress: {0} / {1}", feat.Progress, feat.Quota)
+            + (feat.Id.StartsWith("mastery:", StringComparison.Ordinal) ? LocalText.Get(" wins") : "") : "";
+        return LocalText.Get(feat.Condition) + progress + LocalText.Format("\nReward: {0}", LocalText.Get(feat.RewardText)) + "\n"
+            + (feat.Generated ? LocalText.Get("Granted automatically through progression. No claim needed.") : LocalText.Get(Eligibility(feat.Id)));
     }
+
+    // English while SoloStone's text is English; a translation's hole takes the client's own name for the class.
+    private static string ClassInSentence(string english)
+    {
+        Func<string> locale = LocalText.Locale;
+        return locale != null && LocalText.Normalize(locale()) != null ? NativeStrings.ClassName(english) : english;
+    }
+    private static string LevelName(int level) => LocalText.Format("Level {0}", level);
+    // No hero: the track of every class's levels combined.
+    private static string LevelCondition(string hero, int level) => hero == ""
+        ? LocalText.Format("Reach combined class level {0}.", level)
+        : LocalText.Format("Reach {0} level {1}.", ClassInSentence(LocalCoreProgression.ClassName(hero)), level);
+    private static string MasteryName(string card, int premium) => premium == 2 ? LocalText.Format("{0} — Diamond", card)
+        : premium == 3 ? LocalText.Format("{0} — Signature", card) : LocalText.Format("{0} — Golden", card);
 
     internal static string Eligibility(string id)
     {

@@ -87,7 +87,7 @@ public sealed class OfflineProbe : BaseUnityPlugin
     private static void ConfigureLoanerGroupPath(string root) { }
 #else
     private static void ConfigureLoanerGroupPath(string root) =>
-        NativeUIProjection.TestLoanerGroupPath = root + @"\client\reports\test-loaner-group.txt";
+        NativeUIProjection.TestLoanerGroupPath = Path.Combine(root, "client", "reports", "test-loaner-group.txt");
 #endif
 
     private void InitializeProbe()
@@ -95,11 +95,13 @@ public sealed class OfflineProbe : BaseUnityPlugin
 #if !STANDARD_PROOF
         SaveHold.Engage();
 #endif
-        string identity = WindowsIdentity.GetCurrent().Name;
-        string executable = Process.GetCurrentProcess().MainModule.FileName;
-        string localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        // Who, where and under what system: each answer is the one this process runs under (HostPlatform).
+        string identity = HostPlatform.UserName();
+        string executable = HostPlatform.ExecutablePath();
+        string localData = HostPlatform.LocalApplicationData();
         string[] args = Environment.GetCommandLineArgs();
-        bool wine = RunningUnderWine();
+        // Wine is a Windows program, so nowhere else can this be running under it.
+        bool wine = HostPlatform.Windows && RunningUnderWine();
         int lane = OfflineGuard.LaunchLane(args);
         bool installed = false, installerBuild = false;
 #if SOLOSTONE_INSTALLER
@@ -158,23 +160,23 @@ public sealed class OfflineProbe : BaseUnityPlugin
             return;
         }
 #endif
-        NativePlaytest.Root = Reports + @"\";
+        NativePlaytest.Root = Reports + Path.DirectorySeparatorChar;
         ConfigureLoanerGroupPath(Root);
         StartupTiming.Mark("card-catalogs");
 #if !SOLOSTONE_INSTALLER || SOLOSTONE_TEST_HOOKS
-        PlaytestQueue.KnobPath = Reports + @"\playtest-opponent";
+        PlaytestQueue.KnobPath = Path.Combine(Reports, "playtest-opponent");
 #endif
-        DebugScenario.Path = Reports + @"\debug-scenario";
+        DebugScenario.Path = Path.Combine(Reports, "debug-scenario");
         DebugScenario.RunId = launch.RunId;
         DebugScenario.ClearStale(DebugScenario.Path);   // a scenario file never survives into a new launch
         // Test lanes 1-3 only: lane 0 (the owner's client, test control is live after every deploy) and the Deck never arm the knob.
-        PetPacingKnob.ClearStale(Reports + @"\pet-xp-pacing");
+        PetPacingKnob.ClearStale(Path.Combine(Reports, "pet-xp-pacing"));
         // Any -hs-native-ui-host selector (deck) disables it too, whether or not the launch validated as a Deck launch.
         PetPacingKnob.Path = PetPacingKnob.PathFor(launch.LaneId, launch.Deck || Array.IndexOf(args, "-hs-native-ui-host") >= 0, Reports);
         PetPacingKnob.RunId = launch.RunId;
-        PlaytestRecord.RecordDirectory = Reports + @"\playtest";
+        PlaytestRecord.RecordDirectory = Path.Combine(Reports, "playtest");
 #if !SOLOSTONE_RELEASE
-        CardDbExport.Root = Reports + @"\control";
+        CardDbExport.Root = Path.Combine(Reports, "control");
         CosmeticCoinExport.Root = Reports;
 #endif
         string runId = launch.RunId;
@@ -263,6 +265,7 @@ public sealed class OfflineProbe : BaseUnityPlugin
         NativeStarterDecks.Initialize(Logger);
         NativeTurnTimerOption.Initialize(harmony, Logger, Config);
         NativeFpsCounter.Initialize(Logger, Config);
+        NativeBrandLabel.Initialize(Config);
         NativeDeckInferenceOption.Initialize(Logger, Config);
         NativePlainCardsOption.Initialize(Logger, Config);
         NativeOpponentPetsOption.Initialize(Logger, Config);
@@ -346,7 +349,7 @@ public sealed class OfflineProbe : BaseUnityPlugin
             StartupTiming.Milestone("save-hold-released");
 #if SOLOSTONE_INSTALLER
             // The launcher's health check: this release runs on this client, checks included. It waits for this file.
-            string marker = launch.RunId + "\n" + WindowsIdentity.GetCurrent().Name + "\n" + DateTime.UtcNow.ToString("o");
+            string marker = launch.RunId + "\n" + HostPlatform.UserName() + "\n" + DateTime.UtcNow.ToString("o");
             InstallerRuntime.Prepare(() => File.WriteAllText(Path.Combine(Reports, "plugin-loaded.txt"), marker));
 #endif
         }

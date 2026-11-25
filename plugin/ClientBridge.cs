@@ -553,11 +553,8 @@ internal static class ClientBridge
             {
                 log.LogInfo("NPC_REPLY_PRIOR match=" + record.Id + " prior=" + NativeDeckInferenceOption.ThisMatch + " nextMatch=" + NativeDeckInferenceOption.Enabled);
                 log.LogInfo("PLAIN_CARDS match=" + record.Id + " thisMatch=" + match.PlainCards + " nextMatch=" + NativePlainCardsOption.Enabled);
-#if ENGINE_SOURCE
-                // Which pool this match's random effects read (the Standard policy, whatever FormatType the client shows).
-                log.LogInfo("MATCH_RANDOM_POOL match=" + record.Id + " pool=" + SabberStoneCore.Model.RandomPools.MatchRandomPool.PolicyVersion
-                    + " format=" + match.Game.PoolFormat + " formatType=" + match.Game.FormatType + " manifest=" + match.Game.OfflinePools.Hash);
-#endif
+                // Which pool this match's random effects read is logged by NativeMatch once its game exists (MATCH_RANDOM_POOL):
+                // read here it threw, the game being made at Start, and took the journal below with it.
                 var npc = NpcCatalog.ForDeck(record.Opponent);
                 var humanDeck = player ?? LocalDecks.Get(record.Deck);
                 var encounterFacts = EncounterFacts(record.Opponent);
@@ -580,7 +577,7 @@ internal static class ClientBridge
                 if (string.IsNullOrEmpty(PlaytestRecord.EngineSourceIdentity))
                     log.LogWarning("PLAYTEST engine source build stamp missing; this record cannot be replayed");
             }
-            catch (Exception error) { try { log.LogWarning("match-journal unavailable: " + error.Message); } catch { } }
+            catch (Exception error) { try { log.LogWarning("match-journal unavailable: " + error); } catch { } }
             StartMatch = match.Start;
 #if STANDARD_PROOF
             match.TradeTrace = recordJson => File.AppendAllText(reports + @"\trade-proof.jsonl",

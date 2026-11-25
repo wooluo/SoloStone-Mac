@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="../shared/MiniJSON.cs" Link="MiniJSON.cs" />
     <Compile Include="../../plugin/NativeTestControlBoardTrace.cs" Link="NativeTestControlBoardTrace.cs" />
+    <Compile Include="../../plugin/LocalText.cs" Link="LocalText.cs" />
   </ItemGroup>
   <Target Name="ExtractProtocol" BeforeTargets="CoreCompile">
     <Exec Command="&quot;$(SoloStonePython)&quot; -X utf8 &quot;$(MSBuildProjectDirectory)/extract_protocol.py&quot; &quot;$(IntermediateOutputPath)Protocol.g.cs&quot;" />

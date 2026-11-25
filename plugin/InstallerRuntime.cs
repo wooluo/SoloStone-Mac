@@ -49,9 +49,14 @@ internal static class InstallerRuntime
     }
     // Majors must match tested-client.json (a launcher test proves it). Minor, patch and hashes are the launcher's policy.
     internal const int CompiledMajor=37;
+    // The host each check asks is the one this process runs on: the registry and the firewall rules on Windows, Battle.net's folders
+    // and the sandbox on macOS (HostPlatform).
     internal static string Resolve(string executable, string localData, string[] args, bool candidate, bool wine)
-        => Resolve(executable,localData,args,candidate,wine,WindowsInstallPaths.RegisteredFolders,
-            install=>FirewallRegistry.Verify(install,FirewallProtection.Executables(install)),RuntimeCosmeticVersion);
+        => Resolve(executable,localData,args,candidate,wine,HostPlatform.RegisteredGameFolders,HostPlatform.VerifyNetworkBlock,RuntimeCosmeticVersion);
+
+    // The copy's own record says which file is the game: Hearthstone.exe where it has one (Windows), the bundle's executable on macOS.
+    internal static string GameExecutableOf(InstallRecord install) =>
+        install.Files!=null && install.Files.ContainsKey("Hearthstone.exe") ? "Hearthstone.exe" : HostPlatform.GameExecutable;
 
     // A compile-time reference would inline the value from our reference DLLs, so this reads the running client's.
     private static string RuntimeCosmeticVersion() {
@@ -87,8 +92,8 @@ internal static class InstallerRuntime
         var install=InstallRecord.Load(root);
         Safety.Destination(install.Client,folders);
         Safety.Tree(install.Client).ToArray();
-        if(!Safety.Same(PhysicalPaths.Long(Path.GetFullPath(executable)),Path.Combine(install.Client,"Hearthstone.exe"))
-            || !Safety.Same(localData,Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData))
+        if(!Safety.Same(PhysicalPaths.Long(Path.GetFullPath(executable)),Path.Combine(install.Client,GameExecutableOf(install)))
+            || !Safety.Same(localData,HostPlatform.LocalApplicationData())
             || install.Payload==null)
             throw new InvalidOperationException("Installer identity or copy path rejected.");
         // Never redirect LOCALAPPDATA/USERPROFILE. Current user's existing save location stays unchanged.

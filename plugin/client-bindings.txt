@@ -2577,7 +2577,6 @@ M	Assembly-CSharp	UIEvent	GetElement	PegUIElement()
 M	Assembly-CSharp	UIEvent+Handler	Invoke	System.Void(UIEvent)
 M	Assembly-CSharp	UIStatus	AddInfo	System.Void(System.String)
 M	Assembly-CSharp	UIStatus	Get	UIStatus()
-M	Assembly-CSharp	UnityTouchScreenService	GetBatteryMode	*
 M	Assembly-CSharp	UniversalInputManager	CancelTextInput	System.Void(UnityEngine.GameObject,System.Boolean)
 M	Assembly-CSharp	UniversalInputManager	Get	UniversalInputManager()
 M	Assembly-CSharp	UniversalInputManager	GetInputText	System.String()
@@ -3557,7 +3556,6 @@ T	Assembly-CSharp	Player+Side
 T	Assembly-CSharp	PopupDisplayManager		
 T	Assembly-CSharp	PowerProcessor		
 T	Assembly-CSharp	PowerQueue		
-T	Assembly-CSharp	PowerSource		
 T	Assembly-CSharp	PowerSpellController		
 T	Assembly-CSharp	PowerTask		
 T	Assembly-CSharp	PowerTaskList		
@@ -3682,7 +3680,6 @@ T	Assembly-CSharp	UIEventType
 T	Assembly-CSharp	UIStatus		
 T	Assembly-CSharp	UIVoiceLinesManager		
 T	Assembly-CSharp	UIVoiceLinesManager+TriggerType		
-T	Assembly-CSharp	UnityTouchScreenService		
 T	Assembly-CSharp	UniversalInputManager		
 T	Assembly-CSharp	UniversalInputManager+TextInputCanceledCallback		
 T	Assembly-CSharp	UniversalInputManager+TextInputCompletedCallback		
