@@ -1,171 +1,161 @@
-<p align="center"><img src="docs/images/banner.jpg" alt="SoloStone logo and mascot: a friendly blue stone with a flame on its head, in a tavern at night" width="100%"></p>
+<p align="center"><img src="docs/images/banner.jpg" alt="SoloStone 标志与吉祥物：一颗顶着火焰的友好蓝色石头，坐在夜晚的酒馆里" width="100%"></p>
 
 # SoloStone
 
 > [!WARNING]
-> **Alpha 0.4.0.** SoloStone is in early playtesting, so bugs and blockers can happen. Feedback is very welcome:
-> if anything goes wrong, tell us on [Discord](https://discord.gg/e45QgKHmC2) or open an
-> [issue](https://github.com/KeyStarr/SoloStone/issues).
+> **Alpha 0.4.0。** SoloStone 还在早期试玩阶段，可能出现 bug 和卡进度的问题。欢迎反馈：
+> 遇到任何问题请到 [Discord](https://discord.gg/e45QgKHmC2) 告诉我们，或提一个
+> [issue](https://github.com/wooluo/SoloStone-Mac/issues)。
 
 > [!NOTE]
-> **From the author.** SoloStone is a one-person hobby project, and the code and docs are in rough shape: so far it
-> was built to work, not to be pretty. If people really want to play it, I'll invest more effort in cleaning it up.
-> I also have a full-time job and a family, so I'm often exhausted and may reply with delays for now. Thanks for your
-> patience.
+> **作者的话。** SoloStone 是一个人的业余项目，代码和文档都还比较粗糙：目前它是以"能跑"为目标写出来的，
+> 还没顾上好看。如果真的有很多人想玩，我会投入更多精力去清理。我同时还有全职工作和家庭，
+> 经常很累，回复可能不及时，感谢耐心。
 
-SoloStone is an unofficial offline single-player mod for Hearthstone®. It requires your own legally obtained Hearthstone client. Not affiliated with, endorsed by, or sponsored by Blizzard Entertainment. Hearthstone is a trademark or registered trademark of Blizzard Entertainment, Inc.
+SoloStone 是一个非官方的《炉石传说》单机离线 mod。它需要你自己合法获取的炉石客户端。本项目与暴雪娱乐无关，未获得其认可或赞助。Hearthstone 是 Blizzard Entertainment, Inc. 的商标或注册商标。
 
-**Play Hearthstone offline, on your own PC, against computer opponents.** You get the game's own screens, ranked and
-casual matches, deck building, packs and progress, all kept on your machine.
+**在你自己的电脑上离线玩炉石，对战电脑对手。** 游戏本体的界面、天梯和休闲对局、组卡、开包与进度，全部保存在你的机器上。
 
-[Just want to play?](#just-want-to-play) · [How it works](#how-it-works) · [Contributing](#contributing) · [Build from source](docs/BUILDING.md) · [Run the tests](docs/TESTING.md) ([how testing works](docs/TESTING-GUIDE.md))
+[只想开玩？](#只想开玩) · [工作原理](#工作原理) · [参与贡献](#参与贡献) · [从源码构建](docs/BUILDING.md) · [运行测试](docs/TESTING.md)（[测试体系说明](docs/TESTING-GUIDE.md)）
 
 **English** | [简体中文](README.zh-CN.md)
 
-## Just want to play?
+## 只想开玩？
 
-You need Windows 10 or 11 (64-bit), Hearthstone installed through Battle.net, and about 12.5 GB free.
+你需要 Windows 10 或 11（64 位）、通过 Battle.net 安装的炉石、约 12.5 GB 空闲空间。
 
-1. **Quit Battle.net**: right-click its icon in the tray, choose **Quit**. Do this every time before you play.
-2. Download **`SoloStone-Setup-0.4.0.exe`** from the [latest release](https://github.com/KeyStarr/SoloStone/releases/latest).
-3. Run it. Windows shows a blue **"Windows protected your PC"** page, because the installer has no paid code-signing
-   certificate. Click **More info**, then **Run anyway**.
-4. Follow the five setup steps. When Windows asks for permission (for the firewall rules), click **Yes**.
-5. Start **SoloStone** from the desktop or Start menu shortcut and press **Play**.
+1. **退出 Battle.net**：右键托盘图标，选**退出**。每次玩之前都要做。
+2. 从[最新 release](https://github.com/wooluo/SoloStone-Mac/releases/latest) 下载 **`SoloStone-Setup-0.4.0.exe`**。
+3. 运行。Windows 会弹蓝色**"Windows 已保护你的电脑"**页面，因为安装器没有付费的代码签名证书。
+   点**更多信息**，再点**仍要运行**。
+4. 跟着五步设置走。Windows 请求权限时（添加防火墙规则）点**是**。
+5. 从桌面或开始菜单快捷方式启动 **SoloStone**，点**开始游戏**。
 
-Something went wrong? Tell us on [Discord](https://discord.gg/e45QgKHmC2). The full guide is in [INSTALL.md](docs/INSTALL.md).
+出了问题？到 [Discord](https://discord.gg/e45QgKHmC2) 反馈。完整指南见 [INSTALL.md](docs/INSTALL.md)。
 
-## What it is
+## 这是什么
 
-- **A mod for a separate copy of your game.** SoloStone copies the Hearthstone you already have, adds its own files
-  to the copy and blocks the copy from the internet. Your normal Hearthstone folder is only read.
-- **A local game with computer opponents.** Opponents have their own decks, skill levels and personalities. You climb
-  a local ladder, build decks, open packs and earn rewards by playing.
-- **One fixed card set.** The first release plays the Standard format as it stood just before the *Reign of the Black
-  Empire* expansion (the "Violet Hold meta" in the files). It does not follow later balance changes.
+- **一个套在你游戏副本上的 mod。** SoloStone 复制你已有的炉石，往副本里加入自己的文件，并阻止副本联网。你原本的炉石目录只读不写。
+- **一个本地单机游戏。** 电脑对手有各自的卡组、水平和性格。你在本地天梯爬分、组卡、开包，靠打对局赚奖励。
+- **一套固定的卡池。** 首个版本采用《黑色帝国统治》上线前夕的标准模式（文件里叫"紫罗兰监狱环境"）。不跟随后续平衡补丁。
 
-## What it is not
+## 这不是什么
 
-- **Not online.** No server, no matchmaking, no multiplayer. SoloStone never logs in anywhere.
-- **Not a way to get Hearthstone.** You need the game installed through Battle.net first. SoloStone ships no
-  Hearthstone program files, art or sound.
-- **Not for sale.** SoloStone takes no money of any kind, from anyone.
+- **不是联机。** 没有服务器、没有匹配、没有多人。SoloStone 从不登录任何地方。
+- **不是获取炉石的途径。** 你得先通过 Battle.net 装好炉石。SoloStone 不附带任何炉石程序文件、美术或音频。
+- **不收钱。** SoloStone 不以任何形式向任何人收钱。
 
-The card data file does contain card names and English card text taken from the game, which belong to Blizzard.
-[NOTICE](NOTICE) says what is where.
+卡牌数据文件包含取自游戏的卡名和英文卡牌文本，版权归暴雪。[NOTICE](NOTICE) 说明了具体内容与位置。
 
-**Rights holders:** if you represent Blizzard Entertainment or another rights holder and are not OK with this project,
-or with any part of it, please write to KirillLoves@proton.me. I'll reply promptly and we can talk it through.
+**版权方：** 如果你代表暴雪娱乐或其他版权方，对本项目或其中任何部分有异议，请写信到 KirillLoves@proton.me。我会尽快回复，协商解决。
 
-## How it works
+## 工作原理
 
 ```mermaid
 flowchart LR
-    HS["Your Hearthstone<br/>(only read)"]
+    HS["你的炉石<br/>(只读)"]
     GH["GitHub releases"]
-    subgraph PC["Your PC"]
-        L["SoloStone launcher<br/>checks version and firewall"]
-        subgraph COPY["Separate game copy, blocked from the internet"]
-            UI["Game screens"]
-            P["SoloStone plugin"]
-            E["Rules engine<br/>(based on SabberStone)"]
-            AI["Computer opponents"]
+    subgraph PC["你的电脑"]
+        L["SoloStone 启动器<br/>检查版本与防火墙"]
+        subgraph COPY["独立游戏副本，已断网"]
+            UI["游戏界面"]
+            P["SoloStone 插件"]
+            E["规则引擎<br/>(基于 SabberStone)"]
+            AI["电脑对手"]
         end
-        S["Your saves"]
+        S["你的存档"]
     end
-    HS -->|copied once| COPY
-    GH -.->|signed updates,<br/>launcher only| L
-    L -->|starts| COPY
-    UI <-->|game messages| P
+    HS -->|复制一次| COPY
+    GH -.->|签名更新，<br/>仅启动器| L
+    L -->|启动| COPY
+    UI <-->|游戏消息| P
     P --> E
     P --> AI
     P --> S
 ```
 
-1. **Install.** The setup copies your Hearthstone into `%LOCALAPPDATA%\SoloStone\client`, adds the mod files and asks
-   Windows to block every program in the copy from the internet.
-2. **Launch.** The launcher checks your client version and the firewall rules, then starts the copy.
-3. **Load.** A standard Unity mod loader ([BepInEx](https://github.com/BepInEx/BepInEx)) loads the SoloStone plugin
-   inside the game. The plugin changes the game's code in memory only, each time the game starts. On disk, the copy
-   gets the mod files and its own company name, so its settings stay apart from your Hearthstone.
-4. **Play.** Where the game would talk to Blizzard's servers, the plugin answers instead:
-   - your moves go to a local **rules engine**, based on the open-source
-     [SabberStone](https://github.com/HearthSim/SabberStone) simulator;
-   - the engine's results come back as the same messages a server would send, so the game's own screens show them;
-   - **computer opponents** choose their moves from what a real player could see: no peeking at your hand, no rigged
-     draws.
-5. **Save.** Your collection, decks, rank and rewards live in saves on your PC (`%LOCALAPPDATA%\SoloStone\saves`).
-   Rewards are saved before they are shown, and the saves are backed up, so a crash does not lose or repeat them.
+1. **安装。** 设置程序把你的炉石复制到 `%LOCALAPPDATA%\SoloStone\client`，加入 mod 文件，并请
+   Windows 阻止副本内所有程序联网。
+2. **启动。** 启动器检查你的客户端版本和防火墙规则，然后启动副本。
+3. **加载。** 标准 Unity mod 加载器（[BepInEx](https://github.com/BepInEx/BepInEx)）在游戏内加载
+   SoloStone 插件。插件只在内存里改动游戏代码，每次游戏启动时重新生效。磁盘上，副本获得 mod 文件
+   和自己的公司名，所以它的设置与你的炉石互不干扰。
+4. **对局。** 在游戏原本要与暴雪服务器通信的地方，插件代为应答：
+   - 你的操作交给本地**规则引擎**（基于开源
+     [SabberStone](https://github.com/HearthSim/SabberStone) 模拟器）；
+   - 引擎的结果以服务器消息同样的格式返回，游戏自己的界面照常显示；
+   - **电脑对手**只能看到真实玩家能看到的信息来决策：不偷看你的手牌，不发牌作弊。
+5. **存档。** 你的收藏、卡组、天梯和奖励保存在本地（`%LOCALAPPDATA%\SoloStone\saves`）。
+   奖励先落盘再展示，存档有备份，崩溃不会丢或重复。
 
-**Safety checks.** SoloStone refuses to start if the firewall rules are missing, if it finds a network connection,
-or if your game version is one it can't handle. Your own Hearthstone, your Battle.net
-app and your account are never touched.
+**安全检查。** 防火墙规则缺失、检测到网络连接、或游戏版本无法处理时，SoloStone 拒绝启动。你原本的炉石、Battle.net 程序和账号永远不被触碰。
 
-## What to expect
+## 可以期待什么
 
-- **This is an alpha.** It has rough edges and has been tested on few machines.
-- **Windows only for now**, tested with Hearthstone client 37.0.0.254477. Steam Deck and Linux are not supported yet.
-- **Windows asks for permission once**, to add the firewall rules.
-- **Hearthstone updates:**
+- **这是 alpha。** 有毛边，只在少数机器上测过。
+- **目前仅 Windows**，基于炉石客户端 37.0.0.254477 测试。Steam Deck 和 Linux 暂不支持。
+- **Windows 只请求一次权限**，用于添加防火墙规则。
+- **炉石更新时：**
 
-  | Your client changes by | SoloStone |
+  | 你的客户端变化 | SoloStone |
   |---|---|
-  | a small patch | keeps working, no message |
-  | a medium update | shows a warning you can click through |
-  | a new major version | waits for a matching SoloStone release; copies already installed keep working |
+  | 小补丁 | 照常工作，无提示 |
+  | 中等更新 | 弹一个可以点掉的警告 |
+  | 大版本 | 等待匹配的 SoloStone 版本；已装的副本继续可玩 |
 
-- **Updates to SoloStone** come only through the launcher, before the game starts, and are checked against a
-  signature. You can turn them off. [INSTALL.md](docs/INSTALL.md) lists exactly what connects.
-- **Card text** comes from SoloStone's own file, in English, so it can differ from your updated client or the live game.
+- **SoloStone 自身的更新**只通过启动器下发，在游戏启动前进行，并校验签名。可以关闭。
+  [INSTALL.md](docs/INSTALL.md) 列出了所有联网行为。
+- **卡牌文本**来自 SoloStone 自己的数据文件，只有英文，所以可能与更新后的客户端或线上不同。
 
-## Contributing
+## 参与贡献
 
-**Issues and pull requests are welcome** ([CONTRIBUTING.md](.github/CONTRIBUTING.md): commits are signed off, and CI
-runs the public tests). The most useful help is:
+**欢迎提 issue 和 PR**（[CONTRIBUTING.md](.github/CONTRIBUTING.md)：提交须 sign-off，CI 跑公开测试）。最有用的帮助：
 
-| You can | How |
+| 你可以 | 方式 |
 |---|---|
-| Report a bug | Open an [issue](https://github.com/KeyStarr/SoloStone/issues): your SoloStone and Hearthstone versions, what you did, what you expected, what happened |
-| Report a wrong card or rule | Name the card (or its ID), say what it did and what it should do. A link to a source helps |
-| Tell us an opponent played badly | Say what it did and what a good player would have done |
-| Build it yourself | [BUILDING.md](docs/BUILDING.md). You need your own Hearthstone client as reference libraries |
-| Send a fix | A pull request, with every commit signed off: [CONTRIBUTING.md](.github/CONTRIBUTING.md), [GIT.md](docs/GIT.md) |
-| Report a security problem | [SECURITY.md](.github/SECURITY.md). Not as a public issue |
+| 报 bug | 提 [issue](https://github.com/wooluo/SoloStone-Mac/issues)：写清 SoloStone 和炉石版本、做了什么、期望什么、实际发生什么 |
+| 报卡牌/规则错误 | 写明卡牌（或 ID）、实际效果和正确效果。附来源链接更好 |
+| 说对手打得蠢 | 描述它的操作，以及好玩家会怎么做 |
+| 自己构建 | [BUILDING.md](docs/BUILDING.md)。需要你自己的炉石客户端作为参考库 |
+| 提交修复 | PR，每个 commit 都 sign-off：[CONTRIBUTING.md](.github/CONTRIBUTING.md)、[GIT.md](docs/GIT.md) |
+| 报安全问题 | [SECURITY.md](.github/SECURITY.md)。不要发公开 issue |
 
-Please don't post account details, passwords or tokens, and don't attach game files or card art. Logs can include
-your Windows user name: check them first.
+请不要贴账号信息、密码或 token，不要附游戏文件或卡牌美术。日志可能包含你的 Windows 用户名，先检查再发。
 
-Chat: [Discord](https://discord.gg/e45QgKHmC2)
+聊天：[Discord](https://discord.gg/e45QgKHmC2)
 
-### Not there yet
+### 还没有的
 
-- **Only part of the test suite is published.** The card, rules, opponent AI, pack, ladder and launcher tests are here
-  and run on GitHub ([TESTING.md](docs/TESTING.md)). The tests that need your own Hearthstone client are here too, as
-  a `client` tier you run yourself, but some of them need card data exported with tools that are not published yet.
-  The live tests on a real test machine stay private, so a change you make here is not checked by them.
-- **There is no mod API or developer mode yet.** If there is demand, it gets designed properly. Until then, a mod is
-  a set of patches on top of ours in your own fork.
+- **公开的只是测试套件的一部分。** 卡牌、规则、对手 AI、开包、天梯和启动器测试都在这里并在
+  GitHub 上跑（[TESTING.md](docs/TESTING.md)）。需要你自己的炉石客户端的测试也在，作为 `client`
+  层自己跑；但其中一些需要尚未发布的工具导出的卡牌数据。真机上的实测保持私有，所以你在这里的改动
+  不被它们检查。
+- **还没有 mod API 或开发者模式。** 有需求的话会认真设计。在那之前，mod 就是在你自己的 fork 里
+  叠在我们补丁上的一组补丁。
 
-### Repository layout
+### 仓库结构
 
-| Folder | What is in it |
+| 目录 | 内容 |
 |---|---|
-| `engine/` | The rules engine: a modified SabberStone (AGPL) with the newer card mechanics |
-| `plugin/` | The plugin that runs inside the game: game messages, screens, opponents, saves |
-| `installer/` | The setup and the launcher (`SoloStone.exe`), with its tests |
-| `tests/` | The public test suites and the one command that runs them ([TESTING.md](docs/TESTING.md)) |
-| `sim/HsSim/` | The headless simulator behind the golden-game and random-game tests |
-| `research/` | Two small files of proof decks that the tests and the simulator use |
-| `facts/` | The card data for the fixed card set, one file per meta |
-| `data/` | Opponent decks and personalities, card pools, shop, packs and progression data |
+| `engine/` | 规则引擎：修改版 SabberStone（AGPL），含新卡机制 |
+| `plugin/` | 游戏内运行的插件：游戏消息、界面、对手、存档 |
+| `installer/` | 安装器和启动器（`SoloStone.exe`）及其测试 |
+| `tests/` | 公开测试套件与一键运行（[TESTING.md](docs/TESTING.md)） |
+| `sim/HsSim/` | golden-game 和随机对局测试背后的无头模拟器 |
+| `research/` | 测试和模拟器用的两个小证据卡组文件 |
+| `facts/` | 固定卡池的卡牌数据，一个 meta 一个文件 |
+| `data/` | 对手卡组与人设、卡池、商店、卡包和进度数据 |
 
-Branch and commit naming: [GIT.md](docs/GIT.md).
+分支与提交命名：[GIT.md](docs/GIT.md)。
 
-## Source and licence
+## 来源与许可
 
-The source for every download is in this repository, at that release's tag. [BUILDING.md](docs/BUILDING.md) says how to
-build it.
+每个下载的源码都在本仓库对应 release 的 tag 里。[BUILDING.md](docs/BUILDING.md) 说明如何构建。
 
-SoloStone's own code is licensed under the GNU AGPL version 3 or later ([LICENSE](LICENSE)), with an additional
-permission for its own files ([LICENSE-ADDITIONAL-PERMISSION.md](LICENSE-ADDITIONAL-PERMISSION.md)). The rules engine
-is based on SabberStone, which is also AGPL. Other people's work and its licences are listed in [NOTICE](NOTICE).
+SoloStone 自身代码以 GNU AGPL 3.0 或更高版授权（[LICENSE](LICENSE)），其自有文件附加一项许可
+（[LICENSE-ADDITIONAL-PERMISSION.md](LICENSE-ADDITIONAL-PERMISSION.md)）。规则引擎基于同为 AGPL 的
+SabberStone。其他人的作品及其许可见 [NOTICE](NOTICE)。
+
+---
+
+**语言 / Languages**：[English](README.en.md) · 简体中文（当前）
