@@ -18,7 +18,7 @@ SoloStone 是一个非官方的《炉石传说》单机离线 mod。它需要你
 
 [只想开玩？](#只想开玩) · [工作原理](#工作原理) · [参与贡献](#参与贡献) · [从源码构建](docs/BUILDING.md) · [运行测试](docs/TESTING.md)（[测试体系说明](docs/TESTING-GUIDE.md)）
 
-**English** | [简体中文](README.zh-CN.md)
+[English](README.en.md) | **简体中文**
 
 ## 只想开玩？
 
