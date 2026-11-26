@@ -20,6 +20,8 @@ casual matches, deck building, packs and progress, all kept on your machine.
 
 [Just want to play?](#just-want-to-play) · [How it works](#how-it-works) · [Contributing](#contributing) · [Build from source](docs/BUILDING.md) · [Run the tests](docs/TESTING.md) ([how testing works](docs/TESTING-GUIDE.md))
 
+**English** | [简体中文](README.zh-CN.md)
+
 ## Just want to play?
 
 You need Windows 10 or 11 (64-bit), Hearthstone installed through Battle.net, and about 12.5 GB free.
