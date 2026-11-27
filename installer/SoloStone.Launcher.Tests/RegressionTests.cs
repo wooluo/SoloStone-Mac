@@ -337,7 +337,7 @@ static partial class Program
     }
 #if SOLOSTONE_INSTALLER
     static void RuntimeAdmission(InstallRecord installed,string root,string source) {
-        string exe=Path.Combine(installed.Client,"Hearthstone.exe"), data=Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string exe=Path.Combine(installed.Client,"Hearthstone.exe"), data=HostPlatform.LocalApplicationData();
         string run=Guid.NewGuid().ToString("D"), reports=Path.Combine(root,"reports");
         string[] args={"-hs-installer-root",root,"-hs-native-ui-run",run};
         Directory.CreateDirectory(reports);

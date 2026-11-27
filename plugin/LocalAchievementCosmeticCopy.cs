@@ -21,11 +21,13 @@ internal static class LocalAchievementCosmeticCopy
 
     private static string Build(string flavor, LocalAchievementDefinition achievement)
     {
-        string acquisition = "Earned through " + achievement.Name;
-        char last = acquisition[acquisition.Length - 1];
-        if (last != '.' && last != '!' && last != '?' && last != '…') acquisition += ".";
+        // SoloStone's own text, in the running language; a name that brings its own full stop ends the sentence with it.
+        string name = LocalText.Get(achievement.Name);
+        char last = name[name.Length - 1];
+        string acquisition = last == '.' || last == '!' || last == '?' || last == '…' ? LocalText.Format("Earned through {0}", name)
+            : LocalText.Format("Earned through {0}.", name);
         string prefix = (flavor ?? "").Trim();
         return (prefix.Length == 0 ? "" : prefix + "\n\n")
-            + acquisition + "\nOpen Feats to view the condition.";
+            + acquisition + "\n" + LocalText.Get("Open Feats to view the condition.");
     }
 }

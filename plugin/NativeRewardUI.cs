@@ -444,10 +444,10 @@ internal static class NativeRewardUI
 
     internal static bool ShowTierFallback(LocalResultsReceipt receipt, Action continued)
     {
-        var info = new AlertPopup.PopupInfo {
-            m_id = "LOCAL_TIER_REWARD_FALLBACK_" + receipt.MatchId,
-            m_headerText = "REWARDS SAVED",
-            m_text = LocalRewardPresentation.TierRewardText(receipt.TierRewards) + "\n\nYour rewards are already in your profile.",
+            var info = new AlertPopup.PopupInfo {
+                m_id = "LOCAL_TIER_REWARD_FALLBACK_" + receipt.MatchId,
+                m_headerText = LocalText.Get("REWARDS SAVED"),
+                m_text = LocalRewardPresentation.TierRewardText(receipt.TierRewards) + LocalText.Get("\n\nYour rewards are already in your profile."),
             m_showAlertIcon = false, m_responseDisplay = AlertPopup.ResponseDisplay.CANCEL,
             m_cancelText = NativeStrings.Get("GLOBAL_CONTINUE", "CONTINUE").ToUpperInvariant(), m_keyboardEscIsCancel = false,
             m_responseCallback = (response, data) => { if (response == AlertPopup.Response.CANCEL) continued(); }
@@ -1158,13 +1158,12 @@ internal static class NativeRewardUI
     {
         if (fallbackPopup || !CurrentReceipt(matchId)) return;
         string expectedMatch = matchId; int expectedGeneration = generation;
-        string exact = summaryBody + "\n\n"
-            + "The reward animation could not load. Your rewards are already in your profile.";
+        string exact = summaryBody + LocalText.Get("\n\nYour rewards are already in your profile.");
         var info = new AlertPopup.PopupInfo {
             m_id = LocalRewardSafety.FallbackPopupPrefix + matchId + "_" + generation,
-            m_headerText = "REWARDS SAVED", m_text = exact, m_showAlertIcon = false,
+            m_headerText = LocalText.Get("REWARDS SAVED"), m_text = exact, m_showAlertIcon = false,
             m_responseDisplay = AlertPopup.ResponseDisplay.CONFIRM_CANCEL,
-            m_confirmText = "TRY ANIMATION AGAIN", m_cancelText = NativeStrings.Get("GLOBAL_CONTINUE", "CONTINUE").ToUpperInvariant(), m_keyboardEscIsCancel = false,
+            m_confirmText = LocalText.Get("TRY ANIMATION AGAIN"), m_cancelText = NativeStrings.Get("GLOBAL_CONTINUE", "CONTINUE").ToUpperInvariant(), m_keyboardEscIsCancel = false,
             m_responseCallback = (response, data) => {
                 if (matchId != expectedMatch || generation != expectedGeneration || phase != LocalRewardPhase.NativeFallback) return;
                 fallbackPopup = false;
@@ -1182,10 +1181,10 @@ internal static class NativeRewardUI
         int expectedGeneration = generation;
         var info = new AlertPopup.PopupInfo {
             m_id = LocalRewardSafety.AckRetryPopupPrefix + expectedMatchId,
-            m_headerText = "REWARD SAVE RETRY",
-            m_text = "The reward receipt is still pending. Retry the save before continuing.\n\n" + reason,
+            m_headerText = LocalText.Get("REWARD SAVE RETRY"),
+            m_text = LocalText.Get("The reward receipt is still pending. Retry the save before continuing.") + "\n\n" + reason,
             m_showAlertIcon = false, m_responseDisplay = AlertPopup.ResponseDisplay.CONFIRM,
-            m_confirmText = "RETRY SAVE", m_keyboardEscIsCancel = false,
+            m_confirmText = LocalText.Get("RETRY SAVE"), m_keyboardEscIsCancel = false,
             m_responseCallback = (response, data) => {
                 if (matchId != expectedMatchId || generation != expectedGeneration || phase != LocalRewardPhase.SaveError) return;
                 savePopup = false; AcknowledgeAndRoute(expectedMatchId);
@@ -1199,10 +1198,10 @@ internal static class NativeRewardUI
         if (savePopup) return;
         var info = new AlertPopup.PopupInfo {
             m_id = LocalRewardSafety.SettleRetryPopupId,
-            m_headerText = "RESULT NOT SAVED",
-            m_text = reason + "\n\nRetry uses the same match and reward facts.",
+            m_headerText = LocalText.Get("RESULT NOT SAVED"),
+            m_text = reason + LocalText.Get("\n\nRetry uses the same match and reward facts."),
             m_showAlertIcon = false, m_responseDisplay = AlertPopup.ResponseDisplay.CONFIRM,
-            m_confirmText = "RETRY SAVE", m_keyboardEscIsCancel = false,
+            m_confirmText = LocalText.Get("RETRY SAVE"), m_keyboardEscIsCancel = false,
             m_responseCallback = (response, data) => { savePopup = false; LocalLadder.RetryRewardSave(); }
         };
         savePopup = DialogManager.Get() != null && DialogManager.Get().ShowUniquePopup(info);

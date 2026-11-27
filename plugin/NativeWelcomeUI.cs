@@ -133,7 +133,7 @@ internal static class NativeWelcomeUI
         DialogManager dialogs = DialogManager.Get();
         if (dialogs == null) return false;
         var info = new AlertPopup.PopupInfo {
-            m_id = NativeWelcomeText.PopupId, m_headerText = NativeWelcomeText.Header, m_text = NativeWelcomeText.Body,
+            m_id = NativeWelcomeText.PopupId, m_headerText = LocalText.Get(NativeWelcomeText.Header), m_text = LocalText.Get(NativeWelcomeText.Body),
             m_showAlertIcon = false, m_iconSet = AlertPopup.PopupInfo.IconSet.None,
             m_responseDisplay = AlertPopup.ResponseDisplay.OK, m_okText = NativeStrings.Get("GLOBAL_OKAY", NativeWelcomeText.OkLabel),
             m_responseCallback = (response, data) => Acknowledged(profile)
@@ -179,7 +179,7 @@ internal static class NativeWelcomeUI
         foreach (var entry in NativeWelcomeText.ScrollItems(gift.Packs, gift.Gold, gift.Dust))
             items.Add(Item(entry.Key, entry.Value));
         return new RewardScrollDataModel {
-            DisplayName = NativeWelcomeText.ScrollTitle, Description = NativeWelcomeText.ScrollDescription(gift.KitGoldCap, LocalWelcomeGift.CardSummary(gift)),
+            DisplayName = LocalText.Get(NativeWelcomeText.ScrollTitle), Description = NativeWelcomeText.ScrollDescription(gift.KitGoldCap, LocalWelcomeGift.CardSummary(gift)),
             RewardList = new RewardListDataModel { Items = items },
             // No favourite, quick equip or Go to Collection: those deep links and telemetry are retail-only.
             WillFavoriteItem = false, AllowQuickEquip = false, AllowGoToCollection = false

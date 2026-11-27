@@ -33,10 +33,12 @@ internal static class NativeShopAmountText
 internal static class NativeShopKitText
 {
     internal const string UseId = "shop.kit.use", FullId = "shop.kit.full";
-    internal const string Header = "DECK KIT", UseLabel = "USE KIT", FullLabel = "PAY FULL";
+    internal static string HeaderText() => LocalText.Get("DECK KIT");
+    internal static string UseLabelText() => LocalText.Get("USE KIT");
+    internal static string FullLabelText() => LocalText.Get("PAY FULL");
     internal static string Body(string deck, int price, int kitGoldCap) =>
-        (string.IsNullOrEmpty(deck) ? "" : deck + "\n") + "USE KIT: pay " + Gold(Math.Max(0, price - kitGoldCap))
-        + " gold, the kit covers up to " + Gold(kitGoldCap) + ".\nPAY FULL: pay " + Gold(price) + " gold and keep the kit for another deck.";
+        (string.IsNullOrEmpty(deck) ? "" : deck + "\n") + LocalText.Format("USE KIT: pay {0} gold, the kit covers up to {1}.\nPAY FULL: pay {2} gold and keep the kit for another deck.",
+            Gold(Math.Max(0, price - kitGoldCap)), Gold(kitGoldCap), Gold(price));
     private static string Gold(int value) => value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
 }
 
@@ -161,8 +163,8 @@ internal sealed class NativeShopPurchase
     internal static string Blocker(LocalProfile profile, LocalShopProduct product)
     {
         // Mirrors TestControlShop.Blocker; per-product, so every query is non-copying.
-        if (profile.HasPendingMatch || profile.HasPendingRewardPresentation) return "Match or rewards pending.";
-        if (profile.PackRevealPending) return "A native pack reveal is pending.";
+        if (profile.HasPendingMatch || profile.HasPendingRewardPresentation) return LocalText.Get("Match or rewards pending.");
+        if (profile.PackRevealPending) return LocalText.Get("A native pack reveal is pending.");
         if (product.Kind == "Deck") return profile.DeckPurchaseBlocker(product.RecipeId) ?? DeckCapacityBlocker(profile, product);
         return null;
     }
@@ -211,7 +213,7 @@ internal sealed class NativeShopPurchase
     // Owner 2026-10-28: the native Owned badge already marks owned tiles (a click equips them), so only the equipped tile
     // carries a second line; every other tile shows its name alone.
     internal static string TileName(LocalShopProduct product, bool owned, bool equipped) =>
-        product.Description + (equipped ? "\nEquipped" : "");
+        product.Description + (equipped ? LocalText.Get("\nEquipped") : "");
     // price is the pre-kit quote; kitId (a ready-made deck only) makes the ledger redeem that kit in the same commit.
     internal LocalPurchaseReceipt Commit(LocalProfile profile, long transaction, long product, string currency, int quantity, long price, string kitId = null)
     {
@@ -598,9 +600,9 @@ internal static class NativeShop
     internal static string ControllerAction(PegUIElement control)
     {
         var shown=control?.GetComponentInParent<ShopSlot>()?.BrowserButtonDataModel?.DisplayProduct;
-        if(shown==null || !NativeShopPurchase.TryProduct(shown.PmtId,out var local)) return "View product";
-        if(NativeShopPurchase.IsSelectable(local) && NativeShopPurchase.Owned(Profile,local,0)) return "Equip";
-        return local.Kind=="Pack" || NativeShopPurchase.IsSelectable(local) ? "Buy with gold" : "View product details";
+        if(shown==null || !NativeShopPurchase.TryProduct(shown.PmtId,out var local)) return LocalText.Get("View product");
+        if(NativeShopPurchase.IsSelectable(local) && NativeShopPurchase.Owned(Profile,local,0)) return LocalText.Get("Equip");
+        return local.Kind=="Pack" || NativeShopPurchase.IsSelectable(local) ? LocalText.Get("Buy with gold") : LocalText.Get("View product details");
     }
     internal static object ControllerTransaction => transaction;
 #if !SOLOSTONE_RELEASE
@@ -1302,11 +1304,11 @@ internal static class NativeShop
         kitRelease.Reset(); kitHooked = null; kitProduct = product;
         var question = kitQuestion = new AlertPopup.PopupInfo {
             m_id = "solostone-kit-" + checked(++sequence),
-            m_headerText = NativeShopKitText.Header,
+            m_headerText = NativeShopKitText.HeaderText(),
             // The deck's own name: the native product title reads "Recipe plus missing cards: <deck>".
             m_text = NativeShopKitText.Body(LocalShop.Default.Recipe(local.RecipeId)?.Name ?? product.Name, price, kit.GoldCap),
             m_responseDisplay = AlertPopup.ResponseDisplay.CONFIRM_CANCEL,
-            m_confirmText = NativeShopKitText.UseLabel, m_cancelText = NativeShopKitText.FullLabel, m_keyboardEscIsCancel = true
+            m_confirmText = NativeShopKitText.UseLabelText(), m_cancelText = NativeShopKitText.FullLabelText(), m_keyboardEscIsCancel = true
         };
         question.m_responseCallback = (response, data) => {
             if (!ReferenceEquals(kitQuestion, question)) return;
@@ -1512,8 +1514,8 @@ internal static class NativeShop
     {
         if (HubTheme.Equipped(key)) return;
         DialogManager.Get()?.ShowUniquePopup(new AlertPopup.PopupInfo {
-            m_id = "solostone-theme-next-start", m_headerText = "Main menu theme",
-            m_text = "Your new theme appears the next time you start SoloStone.",
+            m_id = "solostone-theme-next-start", m_headerText = LocalText.Get("Main menu theme"),
+            m_text = LocalText.Get("Your new theme appears the next time you start SoloStone."),
             m_responseDisplay = AlertPopup.ResponseDisplay.OK, m_okText = GameStrings.Get("GLOBAL_OKAY") });
     }
     // Pinned Clickable.OnRelease clears m_dragged and its listener may run before ShopSlot.OnRelease (registration
@@ -1800,15 +1802,15 @@ internal static class NativeShop
             ItemType = ItemType(product), ProductData = NativeShopPurchase.NativeItemId(product), Quantity = 1, BaseQuantity = 1 } }
     };
     internal static string Description(LocalShopProduct product, int price) => (product.Kind == "Pack"
-        ? "One local " + product.PackType + " pack."
-        : product.Kind == "Recipe" ? "Recipe only — cards not included; build it in the deck builder."
-        : product.Kind == "Deck" ? "Recipe plus missing cards (Core cards not yet unlocked included) and a saved, ready-to-play deck."
-        : product.Kind == "HubTheme" ? (product.HubTheme == LocalHubCosmetics.RandomTheme ? "Random owned main menu theme, rolled at each start of SoloStone."
-            : "Main menu theme: " + Sentence(product.Description) + " Click to equip; shown from the next start of SoloStone.")
-        : product.Kind == "Board" ? (product.Board == LocalHubCosmetics.RandomBoard ? "Random owned game board, picked for each match."
-            : "Game board: " + Sentence(product.Description) + " Click to equip; used from your next match.")
-        : product.Kind == "Pet" ? (product.Pet == null ? "No pet in your matches. Click to unequip." : Sentence(product.Description) + " Includes its starting form. Finish matches of at least four turns without conceding for 100 pet XP. Forms unlock at 750, 2,750 and 6,750 total XP. Buying equips it for your next match.")
-        : Sentence(product.Description)) + " " + price + " gold.";
+        ? LocalText.Format("One local {0} pack.", product.PackType)
+        : product.Kind == "Recipe" ? LocalText.Get("Recipe only — cards not included; build it in the deck builder.")
+        : product.Kind == "Deck" ? LocalText.Get("Recipe plus missing cards (Core cards not yet unlocked included) and a saved, ready-to-play deck.")
+        : product.Kind == "HubTheme" ? (product.HubTheme == LocalHubCosmetics.RandomTheme ? LocalText.Get("Random owned main menu theme, rolled at each start of SoloStone.")
+            : LocalText.Format("Main menu theme: {0} Click to equip; shown from the next start of SoloStone.", Sentence(product.Description)))
+        : product.Kind == "Board" ? (product.Board == LocalHubCosmetics.RandomBoard ? LocalText.Get("Random owned game board, picked for each match.")
+            : LocalText.Format("Game board: {0} Click to equip; used from your next match.", Sentence(product.Description)))
+        : product.Kind == "Pet" ? (product.Pet == null ? LocalText.Get("No pet in your matches. Click to unequip.") : LocalText.Format("{0} Includes its starting form. Finish matches of at least four turns without conceding for 100 pet XP. Forms unlock at 750, 2,750 and 6,750 total XP. Buying equips it for your next match.", Sentence(product.Description)))
+        : Sentence(product.Description)) + LocalText.Format(" {0} gold.", price);
     // Native details title the item ("Pirates! Includes:"); a name already ending in . ! ? gets no second stop.
     internal static string Sentence(string text)
     {
@@ -1871,7 +1873,7 @@ internal static class NativeShop
             {
                 int size = NativeShopLayout.Chunks(items.Length - offset, style).First();
                 // Owner 2026-10-29: a deck group continuing in another native section says so ("Meta (cont.)").
-                string heading = chunk > 0 && id.StartsWith("local-decks-", StringComparison.Ordinal) ? label + " (cont.)" : label;
+                string heading = chunk > 0 && id.StartsWith("local-decks-", StringComparison.Ordinal) ? label + " (" + LocalText.Get("cont.") + ")" : label;
                 sections.Add(new Network.ShopSection {
                     InternalName = id + (chunk == 0 ? "" : "-" + chunk), Label = Text(heading), SortOrder = (uint)sections.Count,
                     Attributes = id == "local-packs" ? Attributes("tags", "hide_marketing_images,show_if_all_owned", "max_layout_count", NativeShopLayout.MaxRows.ToString())
@@ -1885,13 +1887,13 @@ internal static class NativeShop
         // Cards: packs only.
         category(NativeShopTabs.Cards, NativeStrings.Get("GLUE_STORE_MODE_CARDS", "Cards"), NativeShopTabs.Icon(NativeShopTabs.Cards));
         begin("packs", NativeStrings.Get("GLUE_BOX_PACKS", "Packs"));
-        section("local-packs", "Local packs", "", offered.Where(p => p.Kind == "Pack"));
+        section("local-packs", LocalText.Get("Local packs"), "", offered.Where(p => p.Kind == "Pack"));
         var shopRecipes = LocalShop.Default.Recipes; // One clone of the library per catalogue build.
-        foreach (var part in new[] { Tuple.Create(NativeShopTabs.Decks1, "Decks I"), Tuple.Create(NativeShopTabs.Decks2, "Decks II") }) {
+        foreach (var part in new[] { Tuple.Create(NativeShopTabs.Decks1, LocalText.Get("Decks I")), Tuple.Create(NativeShopTabs.Decks2, LocalText.Get("Decks II")) }) {
             category(part.Item1, part.Item2, NativeShopTabs.Icon(part.Item1));
             foreach (var hero in NativeShopTabs.DeckClasses.Where(c => c.Tab == part.Item1)) {
                 begin(hero.Id, NativeStrings.ClassName(hero.Label));
-                foreach (var group in new[] { Tuple.Create("meta", "Meta"), Tuple.Create("fan", "Fan favourite") })
+                foreach (var group in new[] { Tuple.Create("meta", LocalText.Get("Meta")), Tuple.Create("fan", LocalText.Get("Fan favourite")) })
                     section("local-decks-" + hero.Hero.ToLowerInvariant() + "-" + group.Item1, group.Item2, NativeShopLayout.DeckRowStyle,
                         NativeShopDecks.ShopOrder(shopRecipes.Where(r => r.Hero == hero.Hero && r.Tag == group.Item1))
                             .SelectMany(r => offered.Where(p => p.RecipeId == r.Id && (p.Kind == "Deck" || p.Kind == "Recipe")
@@ -1899,29 +1901,29 @@ internal static class NativeShop
             }
         }
         // Skins: hero skins, card backs, pets.
-        category(NativeShopTabs.Skins, "Skins", NativeShopTabs.Icon(NativeShopTabs.Skins));
-        begin("hero_skins", "Hero Skins");
+        category(NativeShopTabs.Skins, LocalText.Get("Skins"), NativeShopTabs.Icon(NativeShopTabs.Skins));
+        begin("hero_skins", LocalText.Get("Hero Skins"));
         foreach (var hero in NativeShopTabs.DeckClasses)
             section("local-skins-" + hero.Hero.ToLowerInvariant(), NativeStrings.ClassName(hero.Label), "standardsingle", offered.Where(p => p.Kind == "HeroSkin" && p.Class == hero.Hero));
-        begin("card_backs", NativeStrings.Get("GLUE_COLLECTION_MANAGER_CARD_BACKS_TITLE", "Card Backs"));
-        section("local-card-backs", NativeStrings.Get("GLUE_COLLECTION_MANAGER_CARD_BACKS_TITLE", "Card Backs"), "standardsingle", offered.Where(p => p.Kind == "CardBack"));
-        begin("coin_list", NativeStrings.Get("GLUE_COLLECTION_MANAGER_COINS_TITLE", "Coins"));
-        section("local-coins", NativeStrings.Get("GLUE_COLLECTION_MANAGER_COINS_TITLE", "Coins"), "standardsingle", offered.Where(p => p.Kind == "Coin"));
-        var pets = offered.Where(p => p.Kind == "Pet").ToArray();
-        begin("pet_list", NativeStrings.Get("GLUE_COLLECTION_MANAGER_PET_TITLE", "Pets"));
-        section("local-pets-owned", "No pet", "standardsingle", pets.Where(p => p.Price == 0));
-        section("local-pets-sale", "Pets — 5,000 gold each", "standardsingle", pets.Where(p => p.Price != 0));
+	        begin("card_backs", NativeStrings.Get("GLUE_COLLECTION_MANAGER_CARD_BACKS_TITLE", "Card Backs"));
+	        section("local-card-backs", NativeStrings.Get("GLUE_COLLECTION_MANAGER_CARD_BACKS_TITLE", "Card Backs"), "standardsingle", offered.Where(p => p.Kind == "CardBack"));
+	        begin("coin_list", NativeStrings.Get("GLUE_COLLECTION_MANAGER_COINS_TITLE", "Coins"));
+	        section("local-coins", NativeStrings.Get("GLUE_COLLECTION_MANAGER_COINS_TITLE", "Coins"), "standardsingle", offered.Where(p => p.Kind == "Coin"));
+	        var pets = offered.Where(p => p.Kind == "Pet").ToArray();
+	        begin("pet_list", NativeStrings.Get("GLUE_COLLECTION_MANAGER_PET_TITLE", "Pets"));
+        section("local-pets-owned", LocalText.Get("No pet"), "standardsingle", pets.Where(p => p.Price == 0));
+        section("local-pets-sale", LocalText.Get("Pets — 5,000 gold each"), "standardsingle", pets.Where(p => p.Price != 0));
         // Themes: game boards, main-menu themes. "Random owned" leads each; free looks follow, then the ones for sale.
-        category(NativeShopTabs.Themes, "Themes", NativeShopTabs.Icon(NativeShopTabs.Themes));
+        category(NativeShopTabs.Themes, LocalText.Get("Themes"), NativeShopTabs.Icon(NativeShopTabs.Themes));
         var boards = offered.Where(p => p.Kind == "Board").ToArray();
-        begin("board_list", "Boards");
-        section("local-boards-owned", "Random and classic boards", "standardsingle", boards.Where(p => p.Price == 0).OrderBy(p => p.Board.Value));
-        section("local-boards-sale", "Expansion boards", "standardsingle", boards.Where(p => p.Price != 0));
+        begin("board_list", LocalText.Get("Boards"));
+        section("local-boards-owned", LocalText.Get("Random and classic boards"), "standardsingle", boards.Where(p => p.Price == 0).OrderBy(p => p.Board.Value));
+        section("local-boards-sale", LocalText.Get("Expansion boards"), "standardsingle", boards.Where(p => p.Price != 0));
         var themes = offered.Where(p => p.Kind == "HubTheme").ToArray();
-        begin("theme_list", "Game Themes");
-        section("local-themes-owned", "Random and Classic", "standardsingle",
+        begin("theme_list", LocalText.Get("Game Themes"));
+        section("local-themes-owned", LocalText.Get("Random and Classic"), "standardsingle",
             themes.Where(p => p.Price == 0).OrderBy(p => p.HubTheme == LocalHubCosmetics.RandomTheme ? 0 : 1));
-        section("local-themes-sale", "Themes", "standardsingle", themes.Where(p => p.Price != 0));
+        section("local-themes-sale", LocalText.Get("Themes"), "standardsingle", themes.Where(p => p.Price != 0));
         return sections;
     }
     // END catalogue builders
@@ -2072,7 +2074,7 @@ internal static class NativeShop
             long recipePmt = NativeShopPurchase.PmtId(recipeProduct);
             var recipe = allProducts.FirstOrDefault(model => model != null && model.PmtId == recipePmt);
             if (recipe == null) return;
-            product.VariantName = "Ready-made"; recipe.VariantName = "Recipe";
+            product.VariantName = LocalText.Get("Ready-made"); recipe.VariantName = LocalText.Get("Recipe");
             __result = new[] { product, recipe };
         }
         catch (Exception error) { Refuse("deck variants: " + (error.InnerException ?? error).Message); }
@@ -2085,7 +2087,7 @@ internal static class NativeShop
             if (!NativeShopPurchase.TryProduct(chosenProduct.Variants[0].PmtId, out var deck) || deck.Kind != "Deck") return;
             if (!NativeShopPurchase.TryProduct(chosenProduct.Variants[1].PmtId, out var recipe)
                 || recipe.RecipeId != deck.RecipeId || !NativeShopDecks.PageVariant(recipe)) return;
-            chosenProduct.Variants[0].VariantName = "Ready-made"; chosenProduct.Variants[1].VariantName = "Recipe";
+            chosenProduct.Variants[0].VariantName = LocalText.Get("Ready-made"); chosenProduct.Variants[1].VariantName = LocalText.Get("Recipe");
             __result = chosenProduct.Variants[0];
             Write(__instance, "m_firstVariant", __result);
         }
@@ -2834,7 +2836,7 @@ internal static class NativeShop
             string blocker = NativeShopPurchase.Blocker(Profile, local);
             if (blocker != null || LocalLadder.Screen == "Playing" || LocalLadder.Screen == "Starting")
             {
-                string reason = blocker ?? "Match active.";
+                string reason = blocker ?? LocalText.Get("Match active.");
                 refusalPopup = () => ShowPurchaseFailure("solostone-purchase-refused", reason);
                 throw new InvalidOperationException(reason);
             }
@@ -3075,7 +3077,7 @@ internal static class NativeShop
             { Refuse("foreign purchase confirmation"); pending.Complete(false, null); return false; }
             localConfirmation = new AlertPopup.PopupInfo {
                 m_id = "solostone-confirm-" + checked(++sequence),
-                m_headerText = __0, m_text = "Buy " + __0 + " for " + page.GetSelectedVariant().Prices[0].Amount + " gold?", m_responseDisplay = AlertPopup.ResponseDisplay.CONFIRM_CANCEL,
+                m_headerText = __0, m_text = LocalText.Format("Buy {0} for {1} gold?", __0, page.GetSelectedVariant().Prices[0].Amount), m_responseDisplay = AlertPopup.ResponseDisplay.CONFIRM_CANCEL,
                 m_confirmText = GameStrings.Get("GLOBAL_CONFIRM"), m_cancelText = GameStrings.Get("GLOBAL_CANCEL"),
                 m_responseCallback = (response, data) => {
                     try

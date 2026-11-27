@@ -54,18 +54,18 @@ internal sealed class LocalResultsReceipt
     {
         get
         {
-            if (Casual) return "Casual · no rank change";
-            if (Arena) return "Arena run: " + ArenaWins + " wins, " + ArenaLosses + " losses";
+            if (Casual) return LocalText.Get("Casual · no rank change");
+            if (Arena) return LocalText.Get("Arena run: ") + ArenaWins + LocalText.Get(" wins, ") + ArenaLosses + LocalText.Get(" losses");
             if (!HasRank) return "";
             string before = DisplayRank(StarsBefore, ArrivedByWinBefore), after = DisplayRank(StarsAfter, ArrivedByWinAfter);
-            string text = "Rank: " + before + (before != after ? " → " + after : "");
+            string text = LocalText.Get("Rank: ") + before + (before != after ? " → " + after : "");
             if (StarsAfter < LadderRules.LegendIndex && Ladder.StarsGained != 0)
                 text += " (" + (Ladder.StarsGained > 0 ? "+" : "") + Ladder.StarsGained
-                    + (Math.Abs(Ladder.StarsGained) == 1 ? " star)" : " stars)");
-            else if (Ladder.StarsGained == 0 && Result == "Lost") text += " (no stars lost)";
+                    + (Math.Abs(Ladder.StarsGained) == 1 ? LocalText.Get(" star)") : LocalText.Get(" stars)"));
+            else if (Ladder.StarsGained == 0 && Result == "Lost") text += LocalText.Get(" (no stars lost)");
             int bonus = Ladder.StarsBefore < LadderRules.DiamondFiveIndex ? Pace.Ladder.Stars(Ladder.MultiplierBefore) : 1;
-            return text + (bonus > 1 ? " · bonus stars x" + bonus : "")
-                + (Ladder.StreakBonus ? " · win streak" : "");
+            return text + (bonus > 1 ? LocalText.Get(" · bonus stars x") + bonus : "")
+                + (Ladder.StreakBonus ? LocalText.Get(" · win streak") : "");
         }
     }
 
@@ -94,26 +94,26 @@ internal sealed class LocalResultsReceipt
             string text = "";
             if (HeroClass != null && ClassXpBefore.HasValue && ClassXpAfter.HasValue && ClassXpAfter > ClassXpBefore)
             {
-                text = LocalCoreProgression.ClassName(HeroClass) + " class progress +" + (ClassXpAfter.Value - ClassXpBefore.Value) + " XP";
+                text = LocalCoreProgression.ClassName(HeroClass) + LocalText.Get(" class progress +") + (ClassXpAfter.Value - ClassXpBefore.Value) + LocalText.Get(" XP");
                 int before = LocalResultsXp.Project(ClassXpBefore.Value).Level, after = LocalResultsXp.Project(ClassXpAfter.Value).Level;
-                if (after > before) text += "\nLevel up: " + before + " to " + after;
+                if (after > before) text += LocalText.Get("\nLevel up: ") + before + LocalText.Get(" to ") + after;
             }
-            if (UnlockedCardIds.Count > 0) text += "\nCore unlocked: " + string.Join(", ", UnlockedCardIds.Select(id =>
+            if (UnlockedCardIds.Count > 0) text += LocalText.Get("\nCore unlocked: ") + string.Join(", ", UnlockedCardIds.Select(id =>
                 LocalCoreProgression.ById.TryGetValue(id, out var card) ? card.Name + " x" + card.Copies : id));
-            if (ClassRewards.Count > 0) text += "\nClass rewards: " + string.Join(", ", ClassRewards.OrderBy(row => row.Level)
-                .Select(row => row.Dust > 0 ? row.Dust + " dust" : PremiumName(row.Premium) + " " + RewardCardName(row) + (row.Copies > 1 ? " x" + row.Copies : "")));
-            if (MasteryGrants.Any(row => row.Copies > 0)) text += "\nCard Mastery: " + string.Join(", ", MasteryGrants.Where(row => row.Copies > 0)
+            if (ClassRewards.Count > 0) text += LocalText.Get("\nClass rewards: ") + string.Join(", ", ClassRewards.OrderBy(row => row.Level)
+                .Select(row => row.Dust > 0 ? row.Dust + LocalText.Get(" dust") : PremiumName(row.Premium) + " " + RewardCardName(row) + (row.Copies > 1 ? " x" + row.Copies : "")));
+            if (MasteryGrants.Any(row => row.Copies > 0)) text += LocalText.Get("\nCard Mastery: ") + string.Join(", ", MasteryGrants.Where(row => row.Copies > 0)
                 .Select(row => PremiumName(row.Premium) + " " + CardName(row.CardId) + " x" + row.Copies));
-            if (MasteryProgress.Count > 0) text += "\nNext: " + string.Join(" · ", MasteryProgress
-                .Select(row => PremiumName(row.Premium) + " " + CardName(row.CardId) + " " + row.Wins + " / " + row.RequiredWins + " wins"));
-            if (Portraits.Count > 0) text += "\nPortraits unlocked: " + string.Join(", ", Portraits.Select(PortraitText));
+            if (MasteryProgress.Count > 0) text += LocalText.Get("\nNext: ") + string.Join(" · ", MasteryProgress
+                .Select(row => PremiumName(row.Premium) + " " + CardName(row.CardId) + " " + row.Wins + " / " + row.RequiredWins + LocalText.Get(" wins")));
+            if (Portraits.Count > 0) text += LocalText.Get("\nPortraits unlocked: ") + string.Join(", ", Portraits.Select(PortraitText));
             return text;
         }
     }
 
     // Native TAG_PREMIUM: 0 Normal, 1 Golden, 2 Diamond, 3 Signature.
     internal static string PremiumName(int premium) => premium >= 1 && premium <= 3
-        ? new[] { "Golden", "Diamond", "Signature" }[premium - 1] : "";
+        ? new[] { LocalText.Get("Golden"), LocalText.Get("Diamond "), LocalText.Get("Signature") }[premium - 1] : "";
 
     private static string CardName(string id) => id == null ? "" : SabberStoneCore.Model.Cards.FromId(id)?.Name ?? id;
 
@@ -124,7 +124,7 @@ internal sealed class LocalResultsReceipt
     }
 
     internal static string PortraitText(LocalPortraitGrant grant) =>
-        grant.Kind == "golden" ? "Golden " + CardName(grant.CardId) : "Honored " + CardName(grant.CardId);
+        grant.Kind == "golden" ? LocalText.Get("Golden ") + CardName(grant.CardId) : LocalText.Get("Honored ") + CardName(grant.CardId);
 
     internal string SummaryText(LocalRewardSummary rewards) => string.Join("\n\n", new[] {
         rewards.Header, RankText, rewards.Body, ProgressionText, LocalRewardPresentation.TierRewardText(TierRewards)

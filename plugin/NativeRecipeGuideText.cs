@@ -10,7 +10,7 @@ internal static class NativeRecipeGuideText
         deck?.SourceRecipeId == null ? null : recipes.FirstOrDefault(recipe => recipe.Id == deck.SourceRecipeId);
 
     // Two pages only (owner 2026-11-05): the deck's overall strategy, then what to keep in the opening hand.
-    internal static readonly string[] Headings = { "STRATEGY", "MULLIGAN" };
+    internal static readonly string[] Headings = { LocalText.Get("STRATEGY"), LocalText.Get("MULLIGAN") };
     internal static string[] Sections(DeckRecipe recipe) => new[] { recipe.Guide.Strategy, recipe.Guide.Mulligan };
 
     // The cards a page shows as native card pictures: page 0 the key cards, page 1 the keep list (ids validated against the deck).
@@ -33,6 +33,6 @@ internal static class NativeRecipeGuideText
     }
 
     // One popup per page: header "<deck>: <heading>", body "(n/2)" then the section. The same strings the dialog shows and the live test reads.
-    internal static string PageHeader(DeckRecipe recipe, int page) => recipe.Name + ": " + Headings[page];
-    internal static string PageBody(DeckRecipe recipe, int page) => "(" + (page + 1) + "/" + Sections(recipe).Length + ")\n\n" + Sections(recipe)[page];
+    internal static string PageHeader(DeckRecipe recipe, int page) => LocalText.Get(recipe.Name) + ": " + Headings[page];
+    internal static string PageBody(DeckRecipe recipe, int page) => "(" + (page + 1) + "/" + Sections(recipe).Length + ")\n\n" + LocalText.Get(Sections(recipe)[page]);
 }

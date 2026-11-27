@@ -20,13 +20,13 @@ static partial class Program
         Check(compiled.Length==3 && compiled.Any(c=>c.EndsWith("/Core.cs\"")) && compiled.Any(c=>c.EndsWith("/RuntimeProtection.cs\"")) && compiled.Any(c=>c.EndsWith("/LabGuard.cs\"")),"plugin compiles exactly Core.cs, RuntimeProtection.cs and the hook-only LabGuard.cs from the launcher");
         foreach(string file in launcherOnly) Check(!pluginProject.Contains(file),"plugin does not compile "+file);
         Check(pluginProject.Contains("SOLOSTONE_INSTALLER") && pluginProject.Contains("'$(Installer)' == 'true'") && !pluginProject.Contains("INSTALLER_PROTOTYPE") && !pluginProject.Contains("InstallerPrototype"),"plugin build uses the renamed switch");
-        foreach(string file in new[]{"Core.cs","RuntimeProtection.cs","InstallerRuntime.cs"}) {
+        foreach(string file in new[]{"Core.cs","RuntimeProtection.cs","InstallerRuntime.cs","HostPlatform.cs","MacNetworkBlock.cs"}) {
             string text=Source(file);
             foreach(string banned in new[]{"System.Net","BouncyCastle","System.Reflection.Metadata","HttpWebRequest","HttpClient","WebClient","Socket","UpdateClient","UpdateEngine","Minisign","ClientPolicy"})
                 Check(!text.Contains(banned),file+" stays free of "+banned);
         }
         // Unity's Mono: no working serializer, no Microsoft.CSharp. Nothing the plugin compiles may reach for them.
-        foreach(string file in new[]{"Core.cs","RuntimeProtection.cs","InstallerRuntime.cs"}) {
+        foreach(string file in new[]{"Core.cs","RuntimeProtection.cs","InstallerRuntime.cs","HostPlatform.cs","MacNetworkBlock.cs"}) {
             string text=Regex.Replace(Source(file),@"#if !SOLOSTONE_PLUGIN.*?#endif","",RegexOptions.Singleline);
             // Naming the exception a bad save throws is not parsing XML. The default plugin already references this assembly, and the Mono guard checks it.
             text=text.Replace("System.Xml.XmlException","");
@@ -39,7 +39,10 @@ static partial class Program
             Check(!Regex.IsMatch(line,@"-Encoding\s+(utf8|unicode|bigendian|utf32)",RegexOptions.IgnoreCase) && line.Contains("-Encoding ascii"),"build.ps1 writes no byte order mark: "+line.Trim().Substring(0,Math.Min(50,line.Trim().Length)));
         string runtime=Source("InstallerRuntime.cs");
         Check(runtime.Contains("Type.GetType(\"Network, Assembly-CSharp\")") && !Regex.IsMatch(runtime,@"\bNetwork\.CosmeticVersion"),"plugin reads the client version by reflection, never through an inlined constant");
-        Check(runtime.Contains("FirewallRegistry.Verify(") && !runtime.Contains("FirewallProtection.Verify("),"the plugin's firewall check is the registry read-back");
+        // Per system since the macOS port (HostPlatform): on Windows the plugin's firewall check is the registry read-back.
+        string platform=Source("HostPlatform.cs");
+        Check(runtime.Contains("HostPlatform.VerifyNetworkBlock") && platform.Contains("FirewallRegistry.Verify(") && !platform.Contains("FirewallProtection.Verify(")
+            && !runtime.Contains("FirewallProtection.Verify("),"the plugin's firewall check is the registry read-back");
         Check(!runtime.Contains("BuildSpec") && !Regex.IsMatch(runtime,@"[0-9A-F]{64}"),"compiled four-file pin is gone");
         // Launcher network boundary.
         string host=Source("WindowsHost.cs"), program=Source("Program.cs");

@@ -40,10 +40,10 @@ internal static class TierRewardPlanTests
             "pack maps to Standard booster 713 with saved count");
         Check(plan.Tiles[1].Kind == LocalTierRewardTileKind.RandomCard && plan.Tiles[1].Rarity == "LEGENDARY"
             && plan.Tiles[1].Count == 2, "token maps to random-card display with rarity and count");
-        Check(plan.Captions.SequenceEqual(new[] {
-            "Craft any Legendary (x2)", "Deck kit: claim a ready-made deck in the Shop", "New card back: Gold",
-            "Trophy: Legend", "Legend deck saved", "Recipe: Fire deck", "New challengers: Jaina, npc-2"
-        }), "every non-native grant and token explanation stays visible in receipt order");
+	        Check(plan.Captions.SequenceEqual(new[] {
+	            "Craft any Legendary (x2)", "Deck kit: claim a ready-made deck in the Shop", "New card back: Gold",
+	            "Trophy: Legend", "Legend deck saved", "Recipe: Fire deck", "New challengers: Jaina, npc-2"
+	        }), "every non-native grant and token explanation stays visible in receipt order");
         Check(reward.Grants.Count == 9 && reward.Grants[3].Ref == "910002", "planning cannot mutate saved grants");
 
         var realBack = LocalTierRewardPlan.Build(new[] { Reward("floor:silver-10", null,

@@ -22,7 +22,8 @@ internal static class NativeAchievements
 {
     internal const string HomeId = "home.feats";
     internal static string ButtonLabel => NativeStrings.Get("GLUE_PROGRESSION_ACHIEVEMENTS_TITLE", "Feats");
-    internal const string TooltipBody = "Your achievements, points and rewards.";
+    // SoloStone's own text, in the running language (LocalText).
+    internal static string TooltipBody => LocalText.Get("Your achievements, points and rewards.");
     // JournalButton.popupAssetReference of the pinned client.
     internal const string JournalPrefab = "JournalPopup.prefab:b61d6e9bd58789647a62494cf92fb93e";
     private const int FeatsTab = (int)JournalTrayDisplay.JournalTab.Achievment;
@@ -182,7 +183,8 @@ internal static class NativeAchievements
             icons.TryGetValue(category.RetailIcon, out RetailIcon icon);
             var model = new AchievementCategoryDataModel {
                 // Live: the medallion art follows the retail category id, not Icon; reuse the borrowed category's id.
-                Name = category.Name, Icon = icon?.Icon ?? "", ID = icon?.Id ?? category.NativeId, Stats = Stats(category.Stats),
+                // SoloStone's own text reaches the client models in the running language (LocalText); the projection stays English.
+                Name = LocalText.Get(category.Name), Icon = icon?.Icon ?? "", ID = icon?.Id ?? category.NativeId, Stats = Stats(category.Stats),
                 Subcategories = new AchievementSubcategoryListDataModel { Subcategories = new DataModelList<AchievementSubcategoryDataModel>() }
             };
             for (int index = 0; index < category.Subcategories.Count; index++)
@@ -196,11 +198,11 @@ internal static class NativeAchievements
                     built[feat.NativeId] = achievement; achievementToSub[feat.NativeId] = sub.NativeId;
                 }
                 achievements.UpdateTiers();
-                var section = new AchievementSectionDataModel { Name = sub.SectionName ?? sub.Name, ID = sub.SectionNativeId,
+                var section = new AchievementSectionDataModel { Name = LocalText.Get(sub.SectionName ?? sub.Name), ID = sub.SectionNativeId,
                     Achievements = new AchievementListDataModel { Achievements = achievements } };
                 var subModel = new AchievementSubcategoryDataModel {
-                    Name = sub.Name, ID = sub.NativeId, Stats = Stats(sub.Stats),
-                    FullName = GameStrings.Format("GLOBAL_PROGRESSION_ACHIEVEMENT_SUBCATEGORY_NAME", category.Name, sub.Name),
+                    Name = LocalText.Get(sub.Name), ID = sub.NativeId, Stats = Stats(sub.Stats),
+                    FullName = GameStrings.Format("GLOBAL_PROGRESSION_ACHIEVEMENT_SUBCATEGORY_NAME", LocalText.Get(category.Name), LocalText.Get(sub.Name)),
                     Icon = !string.IsNullOrEmpty(sub.RetailIcon) ? sub.RetailIcon
                         : icon == null || icon.Subcategories.Count == 0 ? model.Icon : icon.Subcategories[index % icon.Subcategories.Count],
                     Sections = new AchievementSectionListDataModel { Sections = new DataModelList<AchievementSectionDataModel> { section } }
@@ -241,7 +243,7 @@ internal static class NativeAchievements
     {
         RewardListDataModel rewards = Rewards(feat);
         var model = new AchievementDataModel {
-            Name = feat.Name, Description = feat.Summary, Progress = feat.Quota == 0 && feat.Earned ? 1 : feat.Progress,
+            Name = LocalText.Get(feat.Name), Description = LocalText.Get(feat.Summary), Progress = feat.Quota == 0 && feat.Earned ? 1 : feat.Progress,
             Quota = Math.Max(1, feat.Quota), Points = feat.Points,
             // REWARD_ACKED: earned and already granted locally, so no native Claim button; ACTIVE otherwise.
             Status = feat.Earned ? AchievementManager.AchievementStatus.REWARD_ACKED : AchievementManager.AchievementStatus.ACTIVE,
@@ -255,7 +257,7 @@ internal static class NativeAchievements
 
     private static RewardListDataModel Rewards(LocalFeat feat)
     {
-        var list = new RewardListDataModel { Items = new DataModelList<RewardItemDataModel>(), Description = feat.RewardText };
+        var list = new RewardListDataModel { Items = new DataModelList<RewardItemDataModel>(), Description = LocalText.Get(feat.RewardText) };
         foreach (var card in feat.Cards.Where(card => card.DbfId > 0 && card.Copies > 0))
             AddReward(list, new RewardItemDataModel { ItemType = RewardItemType.CARD, ItemId = card.DbfId, Quantity = card.Copies }, feat,
                 (TAG_PREMIUM)card.Premium);
@@ -712,7 +714,7 @@ internal static class NativeAchievements
         if (template.GetDataModel<AchievementSubcategoryDataModel>() is AchievementSubcategoryDataModel sub)
             return "feats.subcategory:" + feats?.Categories.SelectMany(c => c.Subcategories).FirstOrDefault(s => s.NativeId == sub.ID)?.Id;
         if (template.GetDataModel<AchievementCategoryDataModel>() is AchievementCategoryDataModel category)
-            return "feats.category:" + feats?.Categories.FirstOrDefault(c => c.Name == category.Name)?.Id;
+            return "feats.category:" + feats?.Categories.FirstOrDefault(c => LocalText.Get(c.Name) == category.Name)?.Id;
         return null;
     }
 #endif

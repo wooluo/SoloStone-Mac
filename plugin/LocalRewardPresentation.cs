@@ -218,34 +218,34 @@ internal static class LocalRewardPresentation
     {
         if (match == null || match.RewardFacts == null || string.IsNullOrEmpty(match.Result))
             throw new ArgumentException("A settled reward record is required.", nameof(match));
-        string header = match.Result == "Won" ? "VICTORY" : match.Result == "Tied" ? "DRAW" : "DEFEAT";
+        string header = LocalText.Get(match.Result == "Won" ? "VICTORY" : match.Result == "Tied" ? "DRAW" : "DEFEAT");
         string progression = profile?.ProgressionSummary(match) ?? "";
         if (ArenaRules.IsArena(match.Mode))
-            return new LocalRewardSummary(header, "Arena rewards are paid when the run ends." + progression, Array.Empty<LocalRewardItem>());
+            return new LocalRewardSummary(header, LocalText.Get("Arena rewards are paid when the run ends.") + progression, Array.Empty<LocalRewardItem>());
         if (LocalEconomy.IsRolled(match.RewardVersion)) return CurrentSummary(match, header, progression);
         var items = new List<LocalRewardItem>();
         if (match.Gold > 0) items.Add(new LocalRewardItem(LocalRewardKind.Gold, match.Gold));
         if (match.PackReward) items.Add(new LocalRewardItem(LocalRewardKind.Pack, 1, match.Packs?.FirstOrDefault()?.PackType));
         if (match.DustReward > 0) items.Add(new LocalRewardItem(LocalRewardKind.Dust, match.DustReward));
-        string savedItems = (match.PackReward ? "\n1 pack(s)" : "")
-            + (match.DustReward > 0 ? "\nDust +" + match.DustReward : "");
+        string savedItems = (match.PackReward ? "\n" + LocalText.Get("1 pack(s)") : "")
+            + (match.DustReward > 0 ? "\n" + LocalText.Get("Dust +") + match.DustReward : "");
         if (match.Gold == 0)
         {
-            string reason = match.DustReward > 0 ? "No gold earned." : match.Conceded ? "No rewards: the encounter was conceded."
-                : match.Result == "Abandoned" ? "No rewards: the encounter was interrupted."
-                : match.Turns < 4 ? "No gold or packs: the encounter ended before four turns." : "No rewards earned.";
+            string reason = match.DustReward > 0 ? LocalText.Get("No gold earned.") : match.Conceded ? LocalText.Get("No rewards: the encounter was conceded.")
+                : match.Result == "Abandoned" ? LocalText.Get("No rewards: the encounter was interrupted.")
+                : match.Turns < 4 ? LocalText.Get("No gold or packs: the encounter ended before four turns.") : LocalText.Get("No rewards earned.");
             return new LocalRewardSummary(header, reason + savedItems + progression, items);
         }
-        var facts = new List<string> { "Completion +25" };
-        if (match.Result == "Won") facts.Add("Victory +25");
+        var facts = new List<string> { LocalText.Get("Completion +25") };
+        if (match.Result == "Won") facts.Add(LocalText.Get("Victory +25"));
         facts.Add(match.RewardFacts.DistinctCardsPlayed >= 6
-            ? "6 different cards played +10" : Math.Min(6, match.RewardFacts.DistinctCardsPlayed) + "/6 different cards played");
+            ? LocalText.Get("6 different cards played +10") : Math.Min(6, match.RewardFacts.DistinctCardsPlayed) + LocalText.Get("/6 different cards played"));
         facts.Add(match.RewardFacts.EnemyMinionsDefeated >= 5
-            ? "5 enemy minions defeated +10" : Math.Min(5, match.RewardFacts.EnemyMinionsDefeated) + "/5 enemy minions defeated");
+            ? LocalText.Get("5 enemy minions defeated +10") : Math.Min(5, match.RewardFacts.EnemyMinionsDefeated) + LocalText.Get("/5 enemy minions defeated"));
         if (match.Result == "Won" && match.RewardFacts.MinimumHealth >= 1 && match.RewardFacts.MinimumHealth <= 10)
-            facts.Add("Won after dropping to " + match.RewardFacts.MinimumHealth + " Health +20");
-        else if (match.Result == "Won") facts.Add("Minimum observed Health: " + match.RewardFacts.MinimumHealth + " (bonus at 1-10)");
-        return new LocalRewardSummary(header, string.Join("\n", facts) + "\n\nTotal: " + match.Gold + " gold"
+            facts.Add(LocalText.Get("Won after dropping to ") + match.RewardFacts.MinimumHealth + LocalText.Get(" Health +20"));
+        else if (match.Result == "Won") facts.Add(LocalText.Get("Minimum observed Health: ") + match.RewardFacts.MinimumHealth + LocalText.Get(" (bonus at 1-10)"));
+        return new LocalRewardSummary(header, string.Join("\n", facts) + "\n\n" + LocalText.Get("Total: ") + match.Gold + LocalText.Get(" gold")
             + savedItems + progression, items);
     }
 
@@ -266,32 +266,32 @@ internal static class LocalRewardPresentation
         if (dust > 0) items.Add(new LocalRewardItem(LocalRewardKind.Dust, dust));
 
         var baseRewards = new List<string>();
-        if (match.Gold > 0) baseRewards.Add(match.Gold + " gold");
-        if (match.DustReward > 0) baseRewards.Add(match.DustReward + " dust");
+        if (match.Gold > 0) baseRewards.Add(match.Gold + LocalText.Get(" gold"));
+        if (match.DustReward > 0) baseRewards.Add(match.DustReward + LocalText.Get(" dust"));
         if (match.PackReward)
         {
             string type = match.Packs?.FirstOrDefault()?.PackType;
-            baseRewards.Add("1 " + (string.IsNullOrEmpty(type) ? "" : type + " ") + "pack");
+            baseRewards.Add("1 " + (string.IsNullOrEmpty(type) ? "" : type + " ") + LocalText.Get(" pack"));
         }
         bool participationLoss = match.RewardVersion == LocalEconomy.ParticipationRewardVersion && match.Result == "Lost";
-        string reason = baseRewards.Count > 0 ? "Match reward: " + string.Join(", ", baseRewards)
+        string reason = baseRewards.Count > 0 ? LocalText.Get("Match reward: ") + string.Join(", ", baseRewards)
                 + (match.RewardVersion >= 5 && !participationLoss && (match.Result == "Lost" || match.Result == "Tied")
-                    ? "\n" + (match.Result == "Tied" ? "Draw" : "Loss") + " reward: 1/3 of a victory roll (then pace scaled)." : "")
-            : achievements.Count > 0 ? "Achievement reward" + (achievements.Count == 1 ? "" : "s")
-                + " saved. Open Details. No ordinary victory reward."
+                    ? "\n" + LocalText.Format("{0} reward: 1/3 of a victory roll (then pace scaled).", match.Result == "Tied" ? LocalText.Get("Draw") : LocalText.Get("Loss")) : "")
+            : achievements.Count > 0 ? LocalText.Get("Achievement reward") + (achievements.Count == 1 ? "" : "s")
+                + LocalText.Get(" saved. Open Details. No ordinary victory reward.")
             : participationLoss ? LocalEconomy.LossRewardDetails(match.RewardFacts)
-            : match.Conceded ? "No rewards: the encounter was conceded."
-            : match.Result == "Abandoned" ? "No rewards: the encounter was interrupted."
-            : match.Turns < 4 ? "No match rewards: the encounter ended before four turns."
-            : match.RewardVersion == 4 && match.Result != "Won" ? "No match rewards: only victories roll a reward."
-            : "No match rewards earned.";
+            : match.Conceded ? LocalText.Get("No rewards: the encounter was conceded.")
+            : match.Result == "Abandoned" ? LocalText.Get("No rewards: the encounter was interrupted.")
+            : match.Turns < 4 ? LocalText.Get("No match rewards: the encounter ended before four turns.")
+            : match.RewardVersion == 4 && match.Result != "Won" ? LocalText.Get("No match rewards: only victories roll a reward.")
+            : LocalText.Get("No match rewards earned.");
         if (participationLoss && (baseRewards.Count > 0 || achievements.Count > 0))
             reason += "\n" + LocalEconomy.LossRewardDetails(match.RewardFacts);
         if (match.RivalGold > 0) reason += "\n" + RivalryText(match);
-        string achievementText = achievements.Count == 0 ? "" : "\n\nAchievements:\n"
+        string achievementText = achievements.Count == 0 ? "" : "\n\n" + LocalText.Get("Achievements:\n")
             + (achievements.Count <= InlineAchievementDetailLimit ? achievements.Details
-                : achievements.Count + " achievement rewards saved.\n"
-                    + "Open Feats from the home screen to inspect every condition and exact reward.");
+                : achievements.Count + LocalText.Get(" achievement rewards saved.\n")
+                    + LocalText.Get("Open Feats from the home screen to inspect every condition and exact reward."));
         return new LocalRewardSummary(header, reason + achievementText + progression, items);
     }
 
@@ -300,8 +300,8 @@ internal static class LocalRewardPresentation
     {
         string name = null;
         try { name = match.NpcId == null ? null : LocalProfile.NpcDisplayName?.Invoke(match.NpcId); } catch (Exception) { }
-        if (string.IsNullOrWhiteSpace(name) || name.Length > 128 || name.Any(char.IsControl)) name = "your rival";
-        return "Rivalry settled with " + name + ": +" + match.RivalGold + " gold";
+        if (string.IsNullOrWhiteSpace(name) || name.Length > 128 || name.Any(char.IsControl)) name = LocalText.Get("your rival");
+        return LocalText.Get("Rivalry settled with ") + name + ": +" + match.RivalGold + LocalText.Get(" gold");
     }
 
     // Reward V3: only a win rolls gold, dust or both; the bonus lands on the gold when there is gold, else on the dust.
@@ -309,26 +309,26 @@ internal static class LocalRewardPresentation
     {
         if (match.Gold == 0 && match.DustReward == 0 && !match.PackReward)
         {
-            string reason = match.Conceded ? "No rewards: the encounter was conceded."
-                : match.Result == "Abandoned" ? "No rewards: the encounter was interrupted."
-                : match.Turns < 4 ? "No rewards: the encounter ended before four turns."
-                : match.Result == "Won" ? "No rewards earned." : "No gold or dust: only victories roll a reward.";
+            string reason = match.Conceded ? LocalText.Get("No rewards: the encounter was conceded.")
+                : match.Result == "Abandoned" ? LocalText.Get("No rewards: the encounter was interrupted.")
+                : match.Turns < 4 ? LocalText.Get("No rewards: the encounter ended before four turns.")
+                : match.Result == "Won" ? LocalText.Get("No rewards earned.") : LocalText.Get("No gold or dust: only victories roll a reward.");
             return new LocalRewardSummary(header, reason + progression, items);
         }
         int bonus = match.BonusGold;
         int rolledGold = match.Gold - (match.Gold > 0 ? bonus : 0), rolledDust = match.DustReward - (match.Gold > 0 ? 0 : bonus);
-        string Currency(int gold, int dust) => gold > 0 && dust > 0 ? gold + " gold + " + dust + " dust"
-            : gold > 0 ? gold + " gold" : dust + " dust";
-        var facts = new List<string> { "Victory roll: " + Currency(rolledGold, rolledDust) };
+        string Currency(int gold, int dust) => gold > 0 && dust > 0 ? gold + LocalText.Get(" gold + ") + dust + LocalText.Get(" dust")
+            : gold > 0 ? gold + LocalText.Get(" gold") : dust + LocalText.Get(" dust");
+        var facts = new List<string> { LocalText.Get("Victory roll: ") + Currency(rolledGold, rolledDust) };
         facts.Add(match.RewardFacts.DistinctCardsPlayed >= 6
-            ? "6 different cards played +5" : Math.Min(6, match.RewardFacts.DistinctCardsPlayed) + "/6 different cards played");
+            ? LocalText.Get("6 different cards played +5") : Math.Min(6, match.RewardFacts.DistinctCardsPlayed) + LocalText.Get("/6 different cards played"));
         facts.Add(match.RewardFacts.EnemyMinionsDefeated >= 5
-            ? "5 enemy minions defeated +5" : Math.Min(5, match.RewardFacts.EnemyMinionsDefeated) + "/5 enemy minions defeated");
+            ? LocalText.Get("5 enemy minions defeated +5") : Math.Min(5, match.RewardFacts.EnemyMinionsDefeated) + LocalText.Get("/5 enemy minions defeated"));
         if (match.RewardFacts.MinimumHealth >= 1 && match.RewardFacts.MinimumHealth <= 10)
-            facts.Add("Won after dropping to " + match.RewardFacts.MinimumHealth + " Health +10");
-        else facts.Add("Minimum observed Health: " + match.RewardFacts.MinimumHealth + " (bonus at 1-10)");
-        if (bonus > 0) facts.Add("Bonus +" + bonus + (match.Gold > 0 ? " gold" : " dust"));
-        string lines = "Total: " + Currency(match.Gold, match.DustReward) + (match.PackReward ? "\nGreat win: 1 pack" : "");
+            facts.Add(LocalText.Get("Won after dropping to ") + match.RewardFacts.MinimumHealth + LocalText.Get(" Health +10"));
+        else facts.Add(LocalText.Get("Minimum observed Health: ") + match.RewardFacts.MinimumHealth + LocalText.Get(" (bonus at 1-10)"));
+        if (bonus > 0) facts.Add("Bonus +" + bonus + (match.Gold > 0 ? LocalText.Get(" gold") : LocalText.Get(" dust")));
+        string lines = LocalText.Get("Total: ") + Currency(match.Gold, match.DustReward) + (match.PackReward ? LocalText.Get("\nGreat win: 1 pack") : "");
         return new LocalRewardSummary(header, string.Join("\n", facts) + "\n\n" + lines + progression, items);
     }
 
@@ -340,13 +340,13 @@ internal static class LocalRewardPresentation
         {
             // Never a raw NPC/deck id: an opponent the world could not name (failed boot, renamed id) is "your opponent".
             string opponent = !string.IsNullOrEmpty(reward.OpponentName) ? reward.OpponentName
-                : reward.OpponentNpcId != null ? "your opponent" : null;
+                : reward.OpponentNpcId != null ? LocalText.Get("your opponent") : null;
             string milestone = LocalLadderMilestones.DisplayName(reward.MilestoneId);
             // Catch-up rewards have no match behind them, so no opponent to name.
-            var lines = new List<string> { opponent == null ? milestone + " reached" : "You beat " + opponent + " to reach " + milestone };
+            var lines = new List<string> { opponent == null ? milestone + LocalText.Get(" reached") : LocalText.Get("You beat ") + opponent + LocalText.Get(" to reach ") + milestone };
             foreach (var grant in reward.Grants.Where(g => g.Kind != LocalTierGrantKind.Challengers))
             {
-                if (grant.Kind == LocalTierGrantKind.Pack) lines.Add(grant.Count + " pack(s)");
+                if (grant.Kind == LocalTierGrantKind.Pack) lines.Add(grant.Count + LocalText.Get(" pack(s)"));
                 else if (grant.Kind == LocalTierGrantKind.Recipe)
                 {
                     var recipe = LocalShop.Default.Recipes.FirstOrDefault(r => r.Id == grant.Ref);

@@ -4,5 +4,5 @@
   </PropertyGroup>
   <ItemGroup><Compile Include="../../plugin/NativeTierRewards.cs" Link="NativeTierRewards.cs" /><Compile Include="../../plugin/GameTypes.cs" Link="GameTypes.cs" /></ItemGroup>
   <!-- The tier screen looks its button labels up through NativeStrings. -->
-  <ItemGroup><Compile Include="../../plugin/NativeStrings.cs" Link="NativeStrings.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../plugin/NativeStrings.cs" Link="NativeStrings.cs" /><Compile Include="../../plugin/LocalText.cs" Link="LocalText.cs" /></ItemGroup>
 </Project>

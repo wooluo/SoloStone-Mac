@@ -30,7 +30,7 @@ public sealed class OfflineLaunchContext
 #else
     public string Root => InstalledRoot ?? OfflineGuard.LaneRoot(LaneId);
 #endif
-    public string Reports => Root + @"\reports";
+    public string Reports => Path.Combine(Root, "reports");
 #if !SOLOSTONE_RELEASE
     public string ClientPath => Root + @"\client\Hearthstone.exe";
     public int ControlPort => 18765 + LaneId;
@@ -268,18 +268,24 @@ public static class OfflineGuard
         if (candidate ? snapshot != StandardSnapshot : snapshot != null)
             throw new InvalidOperationException("Candidate selector rejected");
 #if SOLOSTONE_RELEASE
-        string saves = PublicNames.SaveRoot(localData) + @"\";
+        string saves = Path.Combine(PublicNames.SaveRoot(localData), "");
 #else
         // Lab saves keep the lab's name; only an installed copy uses the public one (I2b).
-        string saves = (deck || installedRoot != null ? localData : LocalData) + @"\HearthstoneOffline\";
+        string saves = Path.Combine(deck || installedRoot != null ? localData : LocalData, "HearthstoneOffline", "");
 #if SOLOSTONE_INSTALLER
-        if (installedRoot != null) saves = PublicNames.SaveRoot(localData) + @"\";
+        if (installedRoot != null) saves = Path.Combine(PublicNames.SaveRoot(localData), "");
 #endif
 #endif
-        string profile = saves
-            + (candidate ? @"tests\" + StandardSnapshot + @"\" : lane == 0 ? "" : @"lanes\" + lane + @"\") + "profile.xml";
-        // Windows path semantics are checked on Windows; selector tests also run on macOS.
-        if (Path.DirectorySeparatorChar == '\\')
+        string profile = Path.Combine(saves,
+            candidate ? Path.Combine("tests", StandardSnapshot) : lane == 0 ? "" : Path.Combine("lanes", lane.ToString()), "profile.xml");
+        // Windows path semantics are checked on Windows; selector tests also run on macOS, where a lab save sits behind linked folders (/var).
+        // A public build only runs from a SoloStone install folder, which has none, so on macOS it is checked the same way.
+#if SOLOSTONE_RELEASE
+        const bool checkedPaths = true;
+#else
+        bool checkedPaths = Path.DirectorySeparatorChar == '\\';
+#endif
+        if (checkedPaths)
         {
             string canonical = Path.GetFullPath(profile);
             if (!string.Equals(canonical, profile, StringComparison.OrdinalIgnoreCase))
@@ -288,7 +294,7 @@ public static class OfflineGuard
             profile = canonical;
         }
         string rootProfile = profile;
-        bool selector = !candidate && lane == 0 && Path.DirectorySeparatorChar == '\\';
+        bool selector = !candidate && lane == 0 && checkedPaths;
         string relaunchPrevious = null, relaunchToken = null;
         if (selector)
         {

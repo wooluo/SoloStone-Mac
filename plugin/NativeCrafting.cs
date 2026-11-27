@@ -156,11 +156,11 @@ internal static class NativeCrafting
         if (pending?.HasPendingTransactions() == true
             && (!TryReadBatch(pending, out var previous, out _, out var quality) || previous != direction || quality != premium))
         {
-            ShowError("Close the card to save this change, then reopen it for a different crafting action.");
+            ShowError(LocalText.Get("Close the card to save this change, then reopen it for a different crafting action."));
             return false;
         }
         if (direction != CraftDirection.Craft || premium == TAG_PREMIUM.NORMAL) return true;
-        ShowError("Golden cards can only be made by upgrading Normal copies.");
+        ShowError(LocalText.Get("Golden cards can only be made by upgrading Normal copies."));
         return false;
     }
 
@@ -191,11 +191,11 @@ internal static class NativeCrafting
         var pending = CraftingManager.Get()?.GetPendingClientTransaction();
         if (premium != TAG_PREMIUM.NORMAL || pending == null || pending.CardID != cardId || pending.NormalCreateCount < 1
             || !CraftingLedgerRegistry.Current.CraftsWithToken(cardId)) return true;
-        ShowError(TokenOneCopy);
+        ShowError(LocalText.Get("A craft token makes one copy. Close the card to save it, then open it again to craft another."));
         return false;
     }
 
-    internal const string TokenOneCopy = "A craft token makes one copy. Close the card to save it, then open it again to craft another.";
+    internal const string OneCopyToken = "A craft token makes one copy. Close the card to save it, then open it again to craft another.";
     // The client's own localized price word for free (the shop's GLUE_SHOP_FREE); a plain 0 if this client lacks the key.
     internal static string TokenCraftLabel()
     {
@@ -332,7 +332,7 @@ internal static class NativeCrafting
         if (manager == null || !manager.GetShownCardInfo(out EntityDef card, out TAG_PREMIUM premium)) return false;
         if (!AllowAction(CraftDirection.Disenchant, premium)) return false;
         if (premium == TAG_PREMIUM.NORMAL || PremiumSaleAvailable(card.GetCardId(), premium)) return true;
-        ShowError("Premium cards earned through progression cannot be disenchanted.");
+        ShowError(LocalText.Get("Premium cards earned through progression cannot be disenchanted."));
         return false;
     }
 
@@ -543,7 +543,7 @@ internal static class NativeCrafting
         if (completion == null)
         {
             RefreshDust(CraftingLedgerRegistry.Current);
-            if (closeFailed) SafeStep("close error popup", () => ShowError("Crafting could not finish. Reopen the collection and try again."));
+            if (closeFailed) SafeStep("close error popup", () => ShowError(LocalText.Get("Crafting could not finish. Reopen the collection and try again.")));
             return;
         }
         bool committed = completion.Plan != null && completion.Plan.Ok;
@@ -630,7 +630,7 @@ internal static class NativeCrafting
 
     private static void ShowRefreshError()
     {
-        ShowError("Crafting view could not refresh. Your progress is saved. Reopen the collection to refresh its display.");
+        ShowError(LocalText.Get("Crafting view could not refresh. Your progress is saved. Reopen the collection to refresh its display."));
     }
 
     private static void WarnMassRefresh()
@@ -793,7 +793,7 @@ internal static class NativeCrafting
     {
         log.LogWarning("NATIVE_CRAFT " + message);
         DialogManager.Get()?.ShowPopup(new AlertPopup.PopupInfo {
-            m_headerText = "Crafting unavailable", m_text = message ?? "Crafting transaction refused.",
+            m_headerText = LocalText.Get("Crafting unavailable"), m_text = message ?? LocalText.Get("Crafting transaction refused."),
             m_showAlertIcon = true, m_responseDisplay = AlertPopup.ResponseDisplay.OK
         });
     }

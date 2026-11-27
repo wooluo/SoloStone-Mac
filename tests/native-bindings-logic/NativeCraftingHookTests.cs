@@ -600,7 +600,7 @@ internal static partial class NativeCrafting
         Assert(ui.m_craftValue.Text == "Gratis" && TokenCraftLabel() == "0", "token craft reads the client's localized free word"); 
         Assert(BeforeCreate(false) && BeforeUpgradeEvent("CODE_CREATE") && Popups.Count == 0, "first token copy may be created");
         manager.m_pendingClientTransaction.NormalCreateCount = 1;
-        Assert(!BeforeCreate(false) && !BeforeUpgradeEvent("CODE_CREATE") && Popups.Count == 2 && Popups.All(text => text == TokenOneCopy)
+        Assert(!BeforeCreate(false) && !BeforeUpgradeEvent("CODE_CREATE") && Popups.Count == 2 && Popups.All(text => text == NativeCrafting.OneCopyToken)
             && manager.DustAdjustment == -80 && ledger.Commits == 0, "second token-priced copy refused before native mutation");
         ui.m_craftValue.Text = "-0";
         ShowTokenCraft(ui);

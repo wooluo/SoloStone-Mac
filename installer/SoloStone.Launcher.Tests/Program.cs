@@ -40,6 +40,8 @@ static partial class Program
         Source=source, Root=root, ClientPath=client, Bundle=bundle, SaveRoot=saves, Check=Policy(tested), AcceptedWarning=accept };
     static int Main(string[] args) {
         if (args.Length > 0 && args[0] == "tool") return Tool(args.Skip(1).ToArray());
+        // HostPlatformTests starts this program once more inside sandbox-exec and reads this one line.
+        if (args.Length > 0 && args[0] == "--sandbox-probe") return SandboxProbe();
         string temp = Path.Combine(OperatingSystem.IsMacOS()?"/private/tmp":Path.GetTempPath(), "solostone-tests-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(temp);
         try {
@@ -166,6 +168,8 @@ static partial class Program
             EngineTests(temp);
             PluginSubsetTests(temp);
             LanguageTests(temp);
+            LocalTextTests();
+            HostPlatformTests(temp);
             LocalizedTextTests(temp);
             OptionsPanelTests();
             NativeStringsTests(temp);

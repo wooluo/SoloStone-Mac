@@ -288,7 +288,7 @@ public sealed class RecipeLibrary
     private static int Words(string text) => string.IsNullOrWhiteSpace(text) ? 0 : text.Split((char[])null, StringSplitOptions.RemoveEmptyEntries).Length;
     internal static readonly string[] Styles = { "aggro", "tempo", "midrange", "control", "combo" };
     // Shop label, e.g. "Meta, Hard, Combo" or "Fan favourite, Medium, Midrange".
-    public static string Label(DeckRecipe recipe) => (recipe.Tag == "meta" ? "Meta" : "Fan favourite") + ", " + Capital(recipe.Difficulty) + ", " + Capital(recipe.Style);
+    public static string Label(DeckRecipe recipe) => (recipe.Tag == "meta" ? "Meta" : LocalText.Get("Fan favourite")) + ", " + LocalText.Get(Capital(recipe.Difficulty)) + ", " + LocalText.Get(Capital(recipe.Style));
     private static string Capital(string text) => string.IsNullOrEmpty(text) ? "" : char.ToUpperInvariant(text[0]) + text.Substring(1);
 
     public RecipeDeckBuild BuildDeck(DeckRecipe recipe, Func<string, int> ownedCount)

@@ -8,7 +8,7 @@ internal static class NativeFpsCounterText
     internal static string Overlay(bool ready, int fps) => ready ? fps + " FPS" : "-- FPS";
 }
 
-// The always-on brand label (NativeBrandLabel): tells the player this is not retail. Fixed copy, no setting.
+// The brand label (NativeBrandLabel): tells the player this is not retail. Fixed copy; its setting is [Display] BrandLabel.
 internal static class BrandLabelText
 {
     internal const string Text = "SoloStone Offline Mod";

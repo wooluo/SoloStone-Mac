@@ -128,10 +128,10 @@ internal static class NativeHelpUI
             DialogManager dialogs = DialogManager.Get();
             if (dialogs == null) return false;
             return dialogs.ShowUniquePopup(new AlertPopup.PopupInfo {
-                m_id = NativeHelpText.PopupId, m_headerText = NativeHelpText.Header, m_text = NativeHelpText.Body,
+                m_id = NativeHelpText.PopupId, m_headerText = LocalText.Get(NativeHelpText.Header), m_text = LocalText.Get(NativeHelpText.Body),
                 m_showAlertIcon = false, m_iconSet = AlertPopup.PopupInfo.IconSet.None,
                 m_responseDisplay = AlertPopup.ResponseDisplay.CONFIRM_CANCEL,
-                m_confirmText = NativeHelpText.DiscordLabel, m_cancelText = NativeStrings.Get("GLOBAL_OKAY", NativeHelpText.CloseLabel), m_keyboardEscIsCancel = true,
+                m_confirmText = LocalText.Get(NativeHelpText.DiscordLabel), m_cancelText = NativeStrings.Get("GLOBAL_OKAY", NativeHelpText.CloseLabel), m_keyboardEscIsCancel = true,
                 m_responseCallback = (response, data) => { if (response == AlertPopup.Response.CONFIRM) OpenDiscord(); }
             });
         }
@@ -186,7 +186,7 @@ internal static class NativeHelpUI
             if (homeButton != null && homeButton.gameObject.activeSelf) homeButton.gameObject.SetActive(false);
             return;
         }
-        if (homeButton == null) homeButton = Create(bar, gear, "SoloStoneHelpButton", NativeHelpText.ButtonLabel, Show);
+        if (homeButton == null) homeButton = Create(bar, gear, "SoloStoneHelpButton", LocalText.Get(NativeHelpText.ButtonLabel), Show);
         if (!homeButton.gameObject.activeSelf) homeButton.gameObject.SetActive(true);
         Place(bar, gear, homeButton);
     }

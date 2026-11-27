@@ -139,6 +139,8 @@ from the next match. The other settings change at once.
 - **Turn Timer** puts the burning rope on your turns.
 - **Handheld UI** makes mulligan cards and menu text larger, for small screens.
 - **FPS Counter** shows the frame rate in the top-right corner.
+- **Brand Label** (off by default; `[Display] BrandLabel` in `BepInEx\config\solostone.plugin.cfg`, not in Options) shows "SoloStone
+  Offline Mod" in the top-right corner of every screen, so it is plain this is not the retail game. It applies from the next start.
 - **NPC Deck Guess (Experimental)** lets NPCs guess your deck from the cards you have played.
 - **Show Plain Cards** shows golden, diamond and signature cards in their normal version in matches, yours and the
   NPC's, and a golden hero portrait in its normal version too. Your collection, decks and packs keep them as they are.
@@ -153,7 +155,8 @@ The settings are saved in `BepInEx\config\solostone.plugin.cfg` in the copy.
 ## Game language
 
 The game starts in English, or in a language your copy has if it has no English files. SoloStone's own menus are
-always in English, and so is the text of the cards described under "Known issues".
+always in English by default; Simplified Chinese is also available. SoloStone's card text (the data file) is always in
+English, as described under "Known issues".
 
 To switch, open **Options**, then **SoloStone Options**, and press **Language: <name>**. It offers the next language
 your copy has files for; with only one, pressing it explains how to add another. The change applies the next time you
@@ -240,8 +243,8 @@ stops again with the same message.
 - **Antivirus:** a loader file in the copy (`winhttp.dll`) can trigger false alarms in some antivirus programs.
   Do not switch your antivirus off. If it flags the file, check the installer as in "Optional: check your download" and
   report it to your antivirus vendor as a false positive. If you are not comfortable, do not install.
-- Windows only. Steam Deck and Linux are not supported yet. SoloStone's own menus are in English only; see "Game
-  language" for the game's text.
+- This page is the Windows launcher. On macOS SoloStone has a script launcher instead: [MACOS.md](MACOS.md). Steam Deck and Linux
+  are not supported yet. SoloStone's own menus are in English only; see "Game language" for the game's text.
 
 Problems or questions: see [CONTRIBUTING.md](../.github/CONTRIBUTING.md). Logs in `%LOCALAPPDATA%\SoloStone\reports` can include
 your Windows user name and folder paths; remove those before you post a log.

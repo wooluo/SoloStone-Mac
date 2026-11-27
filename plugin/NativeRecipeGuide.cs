@@ -33,7 +33,7 @@ internal sealed class NativeRecipeGuide : MonoBehaviour
                 button.name = "LocalRecipeGuideButton";
                 button.ClearEventListeners();
                 button.BubbleUpEvent = "";
-                button.SetText("Recipe guide");
+                button.SetText(LocalText.Get("Recipe guide"));
                 camera = CameraUtils.FindFirstByLayerMask(1 << source.gameObject.layer)
                     ?? throw new InvalidOperationException("Native guide button camera unavailable.");
                 // 1.4x the Done plate: the centre slices stretch and the end caps stay native (a root x-scale stretched the rivet caps 40%).

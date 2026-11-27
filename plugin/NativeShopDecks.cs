@@ -29,8 +29,8 @@ internal static class NativeShopDecks
             rows.Add(new Row { Table = table, Id = rowId, Values = values });
         };
         int hero = cardId(recipe.Hero), heroClass = (int)LocalDecks.HeroClass(recipe.Hero);
-        string description = product.Kind == "Recipe" ? "Recipe only — cards not included; build it in the deck builder"
-            : "Recipe plus missing cards, Core included; saved as a ready-to-play deck";
+        string description = product.Kind == "Recipe" ? LocalText.Get("Recipe only — cards not included; build it in the deck builder")
+            : LocalText.Get("Recipe plus missing cards, Core included; saved as a ready-to-play deck");
         // ALT_DESCRIPTION names what is sold and the deck's label. The native page's header line is the selected
         // variant name, not this field, so Details leads with the deck name and label.
         add("Deck", id, new Dictionary<string, object> {
@@ -61,10 +61,10 @@ internal static class NativeShopDecks
     // Live 2026-10-25: recipe and ready-made deck tiles both showed the deck name. The tile banner wraps at about
     // 16 characters, so the suffix takes its own short line; the ready-made deck keeps the deck name.
     internal static string DisplayName(LocalShopProduct product, DeckRecipe recipe) =>
-        product.Kind == "Recipe" ? recipe.Name + " (Recipe)" : recipe.Name;
+        product.Kind == "Recipe" ? LocalText.Get(recipe.Name) + " (" + LocalText.Get("Recipe") + ")" : LocalText.Get(recipe.Name);
     // "Ready-made deck — Fan favourite, Medium, Midrange" is the longest (49 characters).
     internal static string Header(LocalShopProduct product, DeckRecipe recipe) =>
-        (product.Kind == "Recipe" ? "Recipe" : "Ready-made deck") + " — " + RecipeLibrary.Label(recipe);
+        (product.Kind == "Recipe" ? LocalText.Get("Recipe") : LocalText.Get("Ready-made deck")) + " — " + RecipeLibrary.Label(recipe);
     // Shop order within a class (owner 2026-10-29): Meta before Fan favourite, then name.
     internal static IEnumerable<DeckRecipe> ShopOrder(IEnumerable<DeckRecipe> recipes) =>
         recipes.OrderBy(recipe => recipe.Tag == "meta" ? 0 : 1).ThenBy(recipe => recipe.Name, StringComparer.OrdinalIgnoreCase);
@@ -82,7 +82,7 @@ internal static class NativeShopDecks
     {
         string blocker = product.Kind == "Deck" ? LocalShop.DeckPurchaseBlocker(missing) : null;
         // The deck name and label still lead the panel; the refusal replaces the price summary.
-        if (blocker != null) return recipe.Name + " — " + RecipeLibrary.Label(recipe) + "\n" + blocker;
+        if (blocker != null) return LocalText.Get(recipe.Name) + " — " + RecipeLibrary.Label(recipe) + "\n" + blocker;
         string kitLine = product.Kind == "Deck" ? KitLine(price, kitGoldCap) : "";
         if (kitLine.Length != 0)
         {
@@ -99,48 +99,47 @@ internal static class NativeShopDecks
     }
     private static string Details(LocalShopProduct product, DeckRecipe recipe, RecipeMissingCopies missing, string kitLine, int price, bool withPreview = true)
     {
-        string preview = kitLine + (!withPreview || string.IsNullOrWhiteSpace(recipe.Preview) ? "" : "\n" + recipe.Preview.Trim());
+        string preview = kitLine + (!withPreview || string.IsNullOrWhiteSpace(recipe.Preview) ? "" : "\n" + LocalText.Get(recipe.Preview));
         int owned = missing.Needed - missing.Total;
         // The native header shows the selected variant's name, so the panel identifies the deck and its label.
-        string label = recipe.Name + " — " + RecipeLibrary.Label(recipe) + "\n";
+        string label = LocalText.Get(recipe.Name) + " — " + RecipeLibrary.Label(recipe) + "\n";
         if (product.Kind == "Recipe")
-            return label + "Recipe only — cards not included. You own " + owned + " of " + missing.Needed + " cards." + preview;
+            return label + LocalText.Format("Recipe only — cards not included. You own {0} of {1} cards.", owned, missing.Needed) + preview;
         if (missing.Total == 0)
-            return label + "You own all " + missing.Needed + " cards." + (price > 0 ? " Nothing missing — " + price + " gold." : "") + preview;
+            return label + LocalText.Format("You own all {0} cards.", missing.Needed) + (price > 0 ? LocalText.Format(" Nothing missing — {0} gold.", price) : "") + preview;
         var groups = missing.Purchasable.Where(row => row.Value > 0).OrderBy(row => RarityOrder(row.Key))
             .Select(row => RarityName(row.Key) + " " + row.Value).ToList();
         // Decision 2026-10-25: a ready-made deck also sells Core copies not yet unlocked by class level.
         int core = missing.LockedCore.Sum(LocalShop.DeckGrant), locked = missing.LockedCore.Sum(card => card.LockedCore) - core;
-        if (core > 0) groups.Add("Core " + core);
-        if (locked > 0) groups.Add("locked Core " + locked);
-        string text = label + "You own " + owned + " of " + missing.Needed + " cards. Missing: " + missing.Total
-            + " (" + string.Join(", ", groups) + ") — " + price + " gold." + preview;
+        if (core > 0) groups.Add(LocalText.Get("Core ") + core);
+        if (locked > 0) groups.Add(LocalText.Get("locked Core ") + locked);
+        string text = label + LocalText.Format("You own {0} of {1} cards. Missing: {2} ({3}) — {4} gold.", owned, missing.Needed, missing.Total, string.Join(", ", groups), price) + preview;
         var names = missing.Cards.OrderByDescending(card => RarityOrder(card.Rarity)).ThenBy(card => card.Id, StringComparer.Ordinal)
             .Select(card => SabberStoneCore.Model.Cards.FromId(card.Id).Name + (card.Missing > 1 ? " x" + card.Missing : "")).ToArray();
         string line = "";
         int shown = 0;
         for (; shown < names.Length; shown++)
         {
-            string next = (shown == 0 ? "\nMissing cards: " : "; ") + names[shown]; // Names may contain commas.
-            string more = shown + 1 < names.Length ? "; +" + (names.Length - shown - 1) + " more" : "";
+            string next = (shown == 0 ? LocalText.Get("\nMissing cards: ") : "; ") + names[shown];
+            string more = shown + 1 < names.Length ? "; +" + (names.Length - shown - 1) + LocalText.Get(" more") : "";
             if (text.Length + line.Length + next.Length + more.Length > DetailsLimit) break;
             line += next;
         }
-        return text + line + (shown > 0 && shown < names.Length ? "; +" + (names.Length - shown) + " more" : "");
+        return text + line + (shown > 0 && shown < names.Length ? "; +" + (names.Length - shown) + LocalText.Get(" more") : "");
     }
     // Owner 2026-10-28: the quoted price already counts the kit; the page says so and names the full price.
     internal static string KitLine(int price, int kitGoldCap, bool brief = false) => price <= 0 || kitGoldCap <= 0 ? ""
-        : brief ? " Deck kit applied. Full price: " + Gold(price) + "."
-        : " Deck kit applied (up to " + Gold(kitGoldCap) + " gold). Full price: " + Gold(price) + " gold.";
+        : brief ? LocalText.Format(" Deck kit applied. Full price: {0}.", Gold(price))
+        : LocalText.Format(" Deck kit applied (up to {0} gold). Full price: {1} gold.", Gold(kitGoldCap), Gold(price));
     private static string Gold(int value) => value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
     private static int RarityOrder(SabberStoneCore.Enums.Rarity rarity) => rarity == SabberStoneCore.Enums.Rarity.FREE ? -1
         : rarity == SabberStoneCore.Enums.Rarity.COMMON ? 0
         : rarity == SabberStoneCore.Enums.Rarity.RARE ? 1 : rarity == SabberStoneCore.Enums.Rarity.EPIC ? 2
         : rarity == SabberStoneCore.Enums.Rarity.LEGENDARY ? 3 : -2;
-    private static string RarityName(SabberStoneCore.Enums.Rarity rarity) => rarity == SabberStoneCore.Enums.Rarity.FREE ? "Free"
-        : rarity == SabberStoneCore.Enums.Rarity.COMMON ? "Common"
-        : rarity == SabberStoneCore.Enums.Rarity.RARE ? "Rare" : rarity == SabberStoneCore.Enums.Rarity.EPIC ? "Epic"
-        : rarity == SabberStoneCore.Enums.Rarity.LEGENDARY ? "Legendary" : "Other";
+    private static string RarityName(SabberStoneCore.Enums.Rarity rarity) => rarity == SabberStoneCore.Enums.Rarity.FREE ? LocalText.Get("Free")
+        : rarity == SabberStoneCore.Enums.Rarity.COMMON ? LocalText.Get("Common")
+        : rarity == SabberStoneCore.Enums.Rarity.RARE ? LocalText.Get("Rare") : rarity == SabberStoneCore.Enums.Rarity.EPIC ? LocalText.Get("Epic")
+        : rarity == SabberStoneCore.Enums.Rarity.LEGENDARY ? LocalText.Get("Legendary") : LocalText.Get("Other");
 
     // Validate every table before inserting anything. Existing reserved rows must be ours, never retail.
     internal static void Ensure(IEnumerable<Row> rows, Func<string, IEnumerable<int>> ids,

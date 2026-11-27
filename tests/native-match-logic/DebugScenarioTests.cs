@@ -107,8 +107,8 @@ internal static partial class Program
             var launch = OfflineGuard.ResolveHeldLaunch(@"LAB\HSNativeUIProbe", "LAB", root + @"\client\Hearthstone.exe",
                 LabTestPaths.LocalData,
                 new[] { "-hs-native-ui-run", RunA, "-hs-native-ui-lane", lane.ToString() }, false);
-            string path = launch.Reports + @"\debug-scenario"; // OfflineProbe startup uses launch.Reports.
-            Check(path == root + @"\reports\debug-scenario" && paths.Add(path),
+            string path = Path.Combine(launch.Reports, "debug-scenario"); // OfflineProbe startup uses launch.Reports.
+            Check(path == Path.Combine(root, "reports", "debug-scenario") && paths.Add(path),
                 "scenario path follows the validated client lane, including unchanged lane 0: " + lane);
             Check(launch.RunId == RunA, "scenario launch run id stays lane-bound");
         }

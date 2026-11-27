@@ -293,7 +293,7 @@ var hooks = new[] {
     ("GameMenu", "GetButtons", "NativeGameMenuTidy", "Tidy"),
     ("AlertPopup", "UpdateLayout", "NativeHelpUI", "WidenHelpText"),
     ("AlertPopup", "UpdateLayout", "NativeHelpUI", "FitHelpPopup"),
-    ("UnityTouchScreenService", "GetBatteryMode", "NativePowerSource", "AlwaysMains"),
+    // No UnityTouchScreenService.GetBatteryMode row: build 255790 has no such service (NativePowerSource).
     ("GraphicsManager", "UpdateFramerateSettings", "NativePowerSource", "RememberRate"),
     ("GraphicsManager", "UpdateFramerateSettings", "NativePowerSource", "KeepRate"),
     ("MulliganManager", "BeginDealNewCards", "DeckLayout", "BeforeNativeTransition"),
@@ -582,13 +582,14 @@ foreach (var contract in new[] {
     catch { failures.Add(contract.Item1 + "::" + contract.Item2 + " achievement toast contract changed"); }
 if (Field(gameMetadata, "BnetBar", "m_socialToastBone").DecodeSignature(signatures, (object)null) != "GameObject")
     failures.Add("BnetBar.m_socialToastBone achievement toast host changed");
-foreach (int row in new[] { 0x1474E, 0x1476A })
-{
-    var method = gameMetadata.GetMethodDefinition(MetadataTokens.MethodDefinitionHandle(row));
-    string owner = gameMetadata.GetString(gameMetadata.GetTypeDefinition(method.GetDeclaringType()).Name);
-    if (owner != "SoundManager" || gameMetadata.GetString(method.Name) != (row == 0x1474E ? "Play" : "PlayClip"))
-        failures.Add("SoundManager achievement audio observation token changed: 0x" + row.ToString("X"));
-}
+// The two SoundManager methods the toast observes, found as the plugin finds them, by parameter list: a metadata row is
+// only right on the build it was read from (0x1474E and 0x1476A moved with build 255790).
+foreach (var (name, parameters, returns) in new[] {
+    ("Play", new[] { "AudioSource", "SoundDef", "AudioClip", "SoundOptions" }, "Boolean"),
+    ("PlayClip", new[] { "SoundPlayClipArgs", "Boolean", "SoundOptions" }, "AudioSource")
+})
+    try { MethodSignature(gameMetadata, "SoundManager", name, parameters, returns, signatures); }
+    catch { failures.Add("SoundManager::" + name + " achievement audio observation contract changed"); }
 MethodSignature(pluginMetadata, "NativeAchievementToast", "BeforeHide", new[] { "AchievementToast" }, "Void", signatures);
 MethodSignature(pluginMetadata, "NativeAchievementToast", "BeforeSpellAudio", new[] { "Object", "Boolean&" }, "Void", signatures);
 MethodSignature(pluginMetadata, "NativeAchievementToast", "AfterSpellAudio", new[] { "Exception", "Boolean" }, "Exception", signatures);

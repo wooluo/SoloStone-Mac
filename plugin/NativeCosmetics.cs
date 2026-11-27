@@ -308,8 +308,8 @@ internal static partial class NativeUIProbe
         try { if (active && ready) RefreshCosmetics(); }
         catch (Exception refreshError) { log.LogWarning("Cosmetics refresh: " + refreshError.Message); }
         DialogManager.Get()?.ShowPopup(new AlertPopup.PopupInfo {
-            m_headerText = saved ? "Cosmetic selection saved" : "Cosmetic selection failed",
-            m_text = saved ? "Selection saved; native display could not refresh. Reopen Collection. " + error.Message : error.Message,
+            m_headerText = saved ? LocalText.Get("Cosmetic selection saved") : LocalText.Get("Cosmetic selection failed"),
+            m_text = saved ? LocalText.Format("Selection saved; native display could not refresh. Reopen Collection. {0}", error.Message) : error.Message,
             m_responseDisplay = AlertPopup.ResponseDisplay.OK });
     }
 }

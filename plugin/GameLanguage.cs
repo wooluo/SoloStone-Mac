@@ -11,8 +11,9 @@ using System.Linq;
 // and is saved in the BepInEx config. Switching in place would need the native reset and download flow, which is mobile-only
 // and online, so a change applies from the next start.
 // A language needs its own files in the copy: Strings/<locale>/ for the game's text and, for every language but enUS (the base
-// catalog), Data/Win/asset_manifest_<locale>.unity3d, the catalog of its localized asset bundles. Card names and text in the
-// card database (Data/Win/dbf.unity3d) already hold every language. Battle.net installs a language's files when it is chosen as
+// catalog), Data/<folder>/asset_manifest_<locale>.unity3d, the catalog of its localized asset bundles. <folder> is the client's data folder,
+// Win on Windows and OSX on macOS; the copy keeps the layout it was made from, so it is read from the copy. Card names and text in the
+// card database (Data/<folder>/dbf.unity3d) already hold every language. Battle.net installs a language's files when it is chosen as
 // Hearthstone's text language; the SoloStone copy has the ones that were installed when it was made.
 internal static class GameLanguage
 {
@@ -30,15 +31,25 @@ internal static class GameLanguage
     internal static string Name(string locale) => Known(locale) ? names[locale] : locale;
 
     // Paths relative to the client folder, '/'-separated, that must exist for the client to run in this locale.
-    internal static string[] RequiredFiles(string locale) => locale == Default
-        ? new[] { "Strings/enUS/GLOBAL.txt" }
-        : new[] { "Strings/" + locale + "/GLOBAL.txt", "Data/Win/asset_manifest_" + locale.ToLowerInvariant() + ".unity3d" };
+    internal static string[] RequiredFiles(string locale, string data = WindowsData) =>
+        locale == Default
+            ? new[] { "Strings/enUS/GLOBAL.txt" }
+            : new[] { "Strings/" + locale + "/GLOBAL.txt", "Data/" + data + "/asset_manifest_" + locale.ToLowerInvariant() + ".unity3d" };
 
-    internal static List<string> Installed(Func<string, bool> exists) =>
-        Locales.Where(locale => RequiredFiles(locale).All(path => { try { return exists(path); } catch { return false; } })).ToList();
+    private const string WindowsData = "Win";
+
+    // The client's data folder, as the copy has it: a macOS client keeps its data in Data/OSX and has no Data/Win.
+    internal static string DataFolder(string clientRoot)
+    {
+        string data = Path.Combine(clientRoot, "Data");
+        return Directory.Exists(Path.Combine(data, "OSX")) && !Directory.Exists(Path.Combine(data, WindowsData)) ? "OSX" : WindowsData;
+    }
+
+    internal static List<string> Installed(Func<string, bool> exists, string data = WindowsData) =>
+        Locales.Where(locale => RequiredFiles(locale, data).All(path => { try { return exists(path); } catch { return false; } })).ToList();
 
     internal static List<string> Installed(string clientRoot) =>
-        Installed(path => File.Exists(Path.Combine(clientRoot, path.Replace('/', Path.DirectorySeparatorChar))));
+        Installed(path => File.Exists(Path.Combine(clientRoot, path.Replace('/', Path.DirectorySeparatorChar))), DataFolder(clientRoot));
 
     // client.config's [Localization] Locale, as the client reads it (Section.Key, trimmed); null when absent or unreadable.
     internal static string ConfigLocale(IEnumerable<string> lines)

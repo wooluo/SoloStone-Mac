@@ -11,6 +11,8 @@
     <Content Include="../SoloStone.iss" Link="launcher-source/SoloStone.iss" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../build.ps1" Link="launcher-source/build.ps1" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../plugin/InstallerRuntime.cs" Link="launcher-source/InstallerRuntime.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../plugin/HostPlatform.cs" Link="launcher-source/HostPlatform.cs" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../plugin/MacNetworkBlock.cs" Link="launcher-source/MacNetworkBlock.cs" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../plugin/OfflineProbe.csproj" Link="launcher-source/OfflineProbe.csproj" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="fixtures/**" Link="fixtures/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="$(TestedClientFile)" LogicalName="tested-client.json" />
@@ -49,6 +51,12 @@
     <Compile Include="../SoloStone.Launcher/Gui/TestHooksCore.cs" Link="Gui/TestHooksCore.cs" />
     <Compile Include="../../plugin/InstallerRuntime.cs" Link="InstallerRuntime.cs" />
     <Compile Include="../../plugin/OfflineGuard.cs" Link="OfflineGuard.cs" />
+    <Compile Include="../../plugin/HostPlatform.cs" Link="HostPlatform.cs" />
+    <Compile Include="../../plugin/MacNetworkBlock.cs" Link="MacNetworkBlock.cs" />
+    <Compile Include="../../plugin/LocalText.cs" Link="LocalText.cs" />
+    <Compile Include="../../plugin/NativeHelpText.cs" Link="NativeHelpText.cs" />
+    <Compile Include="../../plugin/NativeWelcomeText.cs" Link="NativeWelcomeText.cs" />
+    <Content Include="../../plugin/text/*.json" Link="text/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../plugin/ClientBindings.cs" Link="ClientBindings.cs" />
     <Compile Include="../../plugin/ProfileCatalog.cs" Link="ProfileCatalog.cs" />
     <Compile Include="../../plugin/GrindTiers.cs" Link="GrindTiers.cs" /><Compile Include="../../plugin/NpcDifficultyIds.cs" Link="NpcDifficultyIds.cs" />
@@ -59,5 +67,8 @@
     <Compile Include="../../plugin/OptionsPanelLayout.cs" Link="OptionsPanelLayout.cs" />
     <Compile Include="../../plugin/NativeStrings.cs" Link="NativeStrings.cs" />
     <Content Include="../../plugin/**/*.cs" Link="plugin-all/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- What LocalTextTests reads for text that reaches LocalText through data: the shop catalog and the deck recipes. -->
+    <Content Include="../../data/shop/catalog-v1.json" Link="data/shop/catalog-v1.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../data/shop/recipes-v1.json" Link="data/shop/recipes-v1.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

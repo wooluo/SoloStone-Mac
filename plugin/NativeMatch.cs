@@ -855,6 +855,10 @@ public sealed class NativeMatch
         }
         Game.StartGame();
 #if ENGINE_SOURCE
+        // Which pool this match's random effects read (the Standard policy, whatever FormatType the client shows). Here, once the
+        // game exists: before Start there is no game to read it from.
+        BotTrace?.Invoke("MATCH_RANDOM_POOL match=" + MatchId + " pool=" + SabberStoneCore.Model.RandomPools.MatchRandomPool.PolicyVersion
+            + " format=" + Game.PoolFormat + " formatType=" + Game.FormatType + " manifest=" + (Game.OfflinePools?.Hash ?? "-"));
         ValidateDebugScenario();
         DebugScenario?.ApplyOpening(Game);
         if (DebugScenario == null && botHero.Id != ordinaryBotHero.Id)

@@ -63,6 +63,7 @@
     <Compile Include="../../plugin/arena/DraftRules.cs" />
     <Compile Include="../../plugin/arena/ArenaRun.cs" />
     <Compile Include="../../plugin/arena/ArenaService.cs" />
+    <Compile Include="../../plugin/LocalText.cs" Link="LocalText.cs" />
     <EmbeddedResource Include="../../data/arena/arena-rules-v1.json" LogicalName="SoloStone.Arena.arena-rules-v1.json" />
   </ItemGroup>
 </Project>

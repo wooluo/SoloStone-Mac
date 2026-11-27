@@ -25,6 +25,16 @@ static partial class Program
         Check(GameLanguage.Installed(client).SequenceEqual(new[]{"enUS","itIT"}),"a client folder on disk: English and Italian, not the half-present Japanese");
         Check(GameLanguage.Installed(Path.Combine(temp,"no-such-client")).Count==0,"a missing client folder has no languages");
 
+        // A macOS client keeps its data in Data/OSX and has no Data/Win: a copy made from it offers its language, whichever system reads it.
+        Check(GameLanguage.RequiredFiles("zhCN","OSX").SequenceEqual(new[]{"Strings/zhCN/GLOBAL.txt","Data/OSX/asset_manifest_zhcn.unity3d"})
+            && GameLanguage.RequiredFiles("enUS","OSX").SequenceEqual(new[]{"Strings/enUS/GLOBAL.txt"}),"a macOS client's language needs its strings and its own data folder's asset catalog");
+        string mac=Path.Combine(temp,"language-client-mac");
+        foreach(string file in new[]{"Strings/zhCN/GLOBAL.txt","Data/OSX/asset_manifest_zhcn.unity3d","Strings/frFR/GLOBAL.txt"}) {
+            string path=Path.Combine(mac,file.Replace('/',Path.DirectorySeparatorChar)); Directory.CreateDirectory(Path.GetDirectoryName(path)); File.WriteAllText(path,"x");
+        }
+        Check(GameLanguage.DataFolder(mac)=="OSX" && GameLanguage.DataFolder(client)=="Win" && GameLanguage.DataFolder(Path.Combine(temp,"no-such-client"))=="Win","the data folder is the copy's own");
+        Check(GameLanguage.Installed(mac).SequenceEqual(new[]{"zhCN"}),"a macOS client folder on disk: Chinese, not the half-present French");
+
         // client.config as SoloStone ships it (repo root), and the way the client reads keys.
         string shipped="[Config]\nVersion = 3\n\n[Localization]\nLocale = enUS\n\n[Application]\nMode = Public\n\n[Aurora]\nClientCheck = 0\nEnv.Override = 1\nEnv = 127.0.0.1\nPort = 1119\n";
         Check(GameLanguage.ConfigLocale(shipped.Split('\n'))=="enUS","the shipped client.config says enUS");
