@@ -39,12 +39,23 @@ You need Windows 10 or 11 (64-bit), Hearthstone installed through Battle.net, an
 
 ### macOS
 
-You need an Apple Silicon Mac with macOS 15 or newer, Hearthstone installed through Battle.net, and the .NET SDK (see [BUILDING.md](docs/BUILDING.md)).
+You need an Apple Silicon Mac with macOS 15 or newer, Hearthstone installed through Battle.net, and the .NET SDK.
+
+**One-command setup (recommended):**
+```bash
+bash installer/mac/setup-and-play.sh
+```
+
+Or step by step:
 
 1. **Quit Battle.net** completely (icon in the menu bar, then Quit).
-2. **Build the plugin** from your own Hearthstone: `dotnet build plugin/OfflineProbe.csproj -c Debug -p:EngineSource=true -p:Installer=true -p:NuGetAudit=false`
-3. **Install**: `python3 installer/mac/solostone.py setup` — copies the game, adds the mod and blocks the copy from the internet.
-4. **Create a double-click app** (optional): `python3 installer/mac/solostone.py app` — puts a SoloStone icon in your Applications folder.
+2. **Extract references and build the plugin**:
+   ```bash
+   python3 tests/run.py --client "/Applications/Hearthstone" --suite run-tool
+   dotnet build plugin/OfflineProbe.csproj -c Debug -p:EngineSource=true -p:Installer=true -p:NuGetAudit=false
+   ```
+3. **Install**: `python3 installer/mac/solostone.py setup`
+4. **Create a double-click app** (optional): `python3 installer/mac/solostone.py app`
 5. **Play**: double-click the SoloStone icon in Applications, or run `python3 installer/mac/solostone.py launch`.
 
 macOS support is a community port — see [MACOS.md](docs/MACOS.md) for details, troubleshooting and developer notes.

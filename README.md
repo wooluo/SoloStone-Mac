@@ -35,12 +35,23 @@ SoloStone 是一个非官方的《炉石传说》单机离线 mod。它需要你
 
 ### macOS
 
-需要 Apple Silicon 芯片的 Mac、macOS 15 或更新、通过 Battle.net 安装的炉石，以及 .NET SDK（见 [BUILDING.md](docs/BUILDING.md)）。
+需要 Apple Silicon 芯片的 Mac、macOS 15 或更新、通过 Battle.net 安装的炉石，以及 .NET SDK。
+
+**一键安装（推荐）：**
+```bash
+bash installer/mac/setup-and-play.sh
+```
+
+或手动按步执行：
 
 1. **完全退出 Battle.net**（菜单栏图标 → 退出）。
-2. **从你的炉石构建插件**：`dotnet build plugin/OfflineProbe.csproj -c Debug -p:EngineSource=true -p:Installer=true -p:NuGetAudit=false`
-3. **安装**：`python3 installer/mac/solostone.py setup` — 克隆游戏、加入 mod 文件并断网。
-4. **创建双击启动图标**（可选）：`python3 installer/mac/solostone.py app` — 在应用程序里生成 SoloStone 图标。
+2. **提取游戏引用并编译插件**：
+   ```bash
+   python3 tests/run.py --client "/Applications/Hearthstone" --suite run-tool
+   dotnet build plugin/OfflineProbe.csproj -c Debug -p:EngineSource=true -p:Installer=true -p:NuGetAudit=false
+   ```
+3. **安装**：`python3 installer/mac/solostone.py setup`
+4. **创建双击启动图标**（可选）：`python3 installer/mac/solostone.py app`
 5. **开玩**：双击应用程序里的 SoloStone 图标，或运行 `python3 installer/mac/solostone.py launch`。
 
 macOS 支持是社区移植版——详见 [MACOS.md](docs/MACOS.md)（安装、排错、开发说明）。
