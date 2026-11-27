@@ -45,7 +45,16 @@ Run every command from the repository root.
    It takes under a minute. Everything about your game and the copy's place is checked before anything is written there. To use
    another game folder or another place for SoloStone, pass `--source DIR` or `--root DIR`.
 
-5. **Play:**
+5. **Play — with a double-click, or from the terminal:**
+
+   ```text
+   python3 installer/mac/solostone.py app
+   ```
+
+   builds a SoloStone app (default `/Applications/SoloStone.app`), whose icon is the repository's mascot. From then on, double-click
+   it to play: it runs `launch` for you, shows the launcher's answer in a dialog when a start is refused or a game stops by itself,
+   and stays quiet when a game ends normally. It has no Dock icon while the game runs; quit the game and it goes away. The app
+   records where the repository and your `python3` are, so move the repository or change Python and build it again. Without the app:
 
    ```text
    python3 installer/mac/solostone.py launch
@@ -130,7 +139,7 @@ Only what SoloStone made is removed: the copy, its record and reports, and what 
 
 ## What is not here yet
 
-- No window: the launcher is these few commands.
+- No window: the launcher is a few commands, plus the double-click app (`app`), which only shows what the launcher answers.
 - No update check and no save backups. Copy `saves/` somewhere before you experiment.
 - SoloStone's own menus and texts are in English. The game and its cards follow the language chosen in Options.
 - The rest of [INSTALL.md](INSTALL.md) describes the Windows launcher.

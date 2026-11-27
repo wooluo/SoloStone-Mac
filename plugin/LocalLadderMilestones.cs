@@ -206,15 +206,16 @@ internal static class LocalLadderMilestones
     {
         switch (milestoneId)
         {
-            case "legend": return "Legend";
-            case "legend:top-100": return "Top 100";
-            case "legend:1": return "Legend #1";
+            case "legend": return LocalText.Get("Legend");
+            case "legend:top-100": return LocalText.Get("Top 100");
+            case "legend:1": return LocalText.Get("Legend #1");
         }
         if (milestoneId == null || !milestoneId.StartsWith("floor:", StringComparison.Ordinal)) return milestoneId;
         string[] parts = milestoneId.Substring(6).Split('-');
         if (parts.Length != 2 || parts[0].Length == 0 || (parts[1] != "10" && parts[1] != "5")) return milestoneId;
         string league = char.ToUpperInvariant(parts[0][0]) + parts[0].Substring(1);
-        return parts[1] == "10" ? league : league + " 5";
+        string leagueName = LocalText.Get(league);
+        return parts[1] == "10" ? leagueName : leagueName + " 5";
     }
 
     internal static IReadOnlyList<MilestoneGrant> Totals(MilestoneCatalog catalog, bool includeLegendNumbers = false)

@@ -31,7 +31,7 @@ body.append(re.search(r"    private static bool Eligible\([^;]+;", source).group
 body.append(re.search(r"    private static bool Disenchantable\([^;]+;", source).group())
 body.append(re.search(r"    private static bool PresentationEligible\([^;]+;", source).group())
 body.append(re.search(r"    private static bool PremiumSaleAvailable\([^;]+;", source).group())
-for name in ["TokenOneCopy"]:
+for name in ["OneCopyToken"]:
     body.append(re.search(r"    internal const string " + name + r" = [^;]+;", source).group())
 plans = (Path(__file__).parents[2] / "plugin/LocalCrafting.cs").read_text()
 for name in ["CraftPlan", "CraftCardDelta", "CraftLedgerView"]:

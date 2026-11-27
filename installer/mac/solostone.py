@@ -7,6 +7,7 @@ install record (install.json, schema 2) that the plugin's admission reads:
 
     python3 installer/mac/solostone.py setup   [--source DIR] [--root DIR] [--plugin DIR] [--references DIR] [--accept-warning]
     python3 installer/mac/solostone.py launch  [--root DIR]
+    python3 installer/mac/solostone.py app     [--dest APP] [--banner JPG] [--python EXE]
     python3 installer/mac/solostone.py status  [--root DIR]
     python3 installer/mac/solostone.py uninstall [--root DIR] [--delete-saves]
 
@@ -81,6 +82,12 @@ STAGING = 'client.solostone-staging'
 SANDBOX = 'solostone-offline.sb'
 SANDBOX_PROFILE = '(version 1)\n(allow default)\n(deny network*)\n'
 GAME_UID = 'SoloStone'   # ClientIdentity.GameUid: the game's -uid, so its options folder is its own
+# The double-click app (`app`): an AppleScript applet in /Applications that runs this script's launch and shows what it answers.
+APP_IDENTIFIER = 'local.solostone.launcher'
+APP_NAME = 'SoloStone'
+APP_DEST = Path('/Applications/SoloStone.app')
+BANNER = REPOSITORY / 'docs' / 'images' / 'banner.jpg'
+ICON_SIZES = [(16, 1), (16, 2), (32, 1), (32, 2), (128, 1), (128, 2), (256, 1), (256, 2), (512, 1), (512, 2)]
 # Left out of the copy, as on Windows (Installer.Excluded): folders at the top of the client, and files by name.
 EXCLUDED_FOLDERS = {'bepinex', 'logs', 'reports'}
 EXCLUDED_FILES = {'client.config', 'winhttp.dll', 'doorstop_config.ini', '.doorstop_version', '.solostone-client', '.solostone-app', SANDBOX}
@@ -695,6 +702,104 @@ def uninstall(root, delete_saves):
     return 0
 
 
+# ---- the double-click app
+
+LAUNCH_APPLET = '''-- SoloStone's app: double-click it (or click its icon again while it is running) to start the copy.
+-- Every check stays in the launcher script (installer/mac/solostone.py); this app only shows what it answers,
+-- and stays quiet when a game ends normally.
+on run
+    playSoloStone()
+end run
+
+on reopen
+    playSoloStone()
+end reopen
+
+on playSoloStone()
+    set repo to %(repository)s
+    set py to %(python)s
+    set launcher to %(launcher)s
+    try
+        set said to do shell script "cd " & quoted form of repo & " && " & quoted form of py & " " & quoted form of launcher & " launch 2>&1"
+        if said is not "" then
+            soloStoneSays(said)
+        end if
+    on error said
+        soloStoneSays(said)
+    end try
+    tell me to quit
+end playSoloStone
+
+on soloStoneSays(said)
+    display alert "SoloStone" message said buttons {"OK"} default button "OK"
+end soloStoneSays
+'''
+
+
+def applescript_string(text):
+    return '"' + text.replace('\\', '\\\\').replace('"', '\\"') + '"'
+
+
+def iconset_entries():
+    return [('icon_%dx%d%s.png' % (px, px, '@2x' if s == 2 else ''), px * s) for px, s in ICON_SIZES]
+
+
+def make_app(dest, banner, python):
+    dest, banner = Path(dest), Path(banner)
+    if dest.exists():
+        try:
+            identifier = plistlib.loads((dest / 'Contents' / 'Info.plist').read_bytes()).get('CFBundleIdentifier')
+        except (OSError, ValueError):
+            identifier = None
+        if identifier != APP_IDENTIFIER:
+            raise Refused("%s exists and is not SoloStone's launcher app. Choose another place with --dest." % dest)
+        shutil.rmtree(dest)
+    if not banner.is_file():
+        raise Refused('the image the icon is cut from is missing: %s' % banner)
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        raise Refused('the app icon needs the Pillow package: python3 -m pip install pillow')
+    script = LAUNCH_APPLET % {'repository': applescript_string(str(REPOSITORY)),
+                              'python': applescript_string(python),
+                              'launcher': applescript_string(str(Path(__file__).resolve()))}
+    with tempfile.TemporaryDirectory() as work:
+        source = Path(work) / 'launcher.applescript'
+        source.write_text(script, encoding='utf-8')
+        compiled = run(['/usr/bin/osacompile', '-o', str(dest), str(source)])
+        if compiled.returncode != 0 or not dest.is_dir():
+            raise Refused('the app could not be compiled: %s' % compiled.stderr.strip())
+        picture = Image.open(banner).convert('RGB')
+        box = (190, 200, 890, 900)
+        if not (0 <= box[0] < box[2] <= picture.width and 0 <= box[1] < box[3] <= picture.height):
+            side = min(picture.size)
+            box = ((picture.width - side) // 2, (picture.height - side) // 2,
+                   (picture.width + side) // 2, (picture.height + side) // 2)
+        side = 1024
+        square = picture.crop(box).resize((side, side), Image.LANCZOS)
+        corners = Image.new('L', (side, side), 0)
+        ImageDraw.Draw(corners).rounded_rectangle((0, 0, side - 1, side - 1), radius=round(side * 0.224), fill=255)
+        iconset = Path(work) / 'applet.iconset'
+        iconset.mkdir()
+        for name, pixels in iconset_entries():
+            entry = Image.new('RGBA', (pixels, pixels))
+            entry.paste(square.resize((pixels, pixels), Image.LANCZOS).convert('RGBA'), (0, 0),
+                        corners.resize((pixels, pixels), Image.LANCZOS))
+            entry.save(iconset / name)
+        icon = run(['/usr/bin/iconutil', '-c', 'icns', str(iconset),
+                    '-o', str(dest / 'Contents' / 'Resources' / 'applet.icns')])
+        if icon.returncode != 0:
+            raise Refused('the app icon could not be built: %s' % icon.stderr.strip())
+    info = plistlib.loads((dest / 'Contents' / 'Info.plist').read_bytes())
+    info['CFBundleIdentifier'], info['CFBundleName'], info['LSUIElement'] = APP_IDENTIFIER, APP_NAME, True
+    (dest / 'Contents' / 'Info.plist').write_bytes(plistlib.dumps(info))
+    signed = run(['/usr/bin/codesign', '--force', '--sign', '-', '--timestamp=none', str(dest)])
+    if signed.returncode != 0:
+        raise Refused('the app could not be signed: %s' % signed.stderr.strip())
+    print("Built %s. Double-click it to play; it shows the launcher's answer when a start is refused." % dest)
+    return 0
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest='command', required=True)
@@ -710,11 +815,15 @@ def main(argv=None):
     uninstall_parser = sub.add_parser('uninstall', help='remove the copy; saves stay unless asked')
     uninstall_parser.add_argument('--root', default=str(DEFAULT_ROOT))
     uninstall_parser.add_argument('--delete-saves', action='store_true')
+    app_parser = sub.add_parser('app', help='build the double-click launcher app (default /Applications/SoloStone.app)')
+    app_parser.add_argument('--dest', default=str(APP_DEST), help='where the app goes')
+    app_parser.add_argument('--banner', default=str(BANNER), help='the image the icon is cut from')
+    app_parser.add_argument('--python', default=sys.executable, help='the python3 that runs the launcher')
     args = parser.parse_args(argv)
     if sys.platform != 'darwin':
         print("SoloStone's macOS launcher runs on macOS only.", file=sys.stderr)
         return 1
-    root = Path(canonical(args.root))
+    root = Path(canonical(getattr(args, 'root', str(DEFAULT_ROOT))))
     try:
         if args.command == 'setup':
             return setup(Path(args.source), root, Path(args.plugin), Path(args.references), args.accept_warning)
@@ -722,6 +831,8 @@ def main(argv=None):
             return launch(root)
         if args.command == 'status':
             return status(root)
+        if args.command == 'app':
+            return make_app(Path(args.dest), Path(args.banner), args.python)
         return uninstall(root, args.delete_saves)
     except Refused as error:
         print('SOLOSTONE REFUSED: %s' % error, file=sys.stderr)

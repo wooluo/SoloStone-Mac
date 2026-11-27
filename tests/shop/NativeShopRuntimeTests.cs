@@ -1300,7 +1300,7 @@ partial class NativeBundleHarness
         var deck = NativeShopPurchase.Products.First(p => p.Kind == "Deck" && !LocalShop.Default.Recipe(p.RecipeId).Cards.Any(card => LocalWelcomeGift.HistoricalCardIds.Contains(card.Id)));
         var deckRecipe = LocalShop.Default.Recipe(deck.RecipeId);
         var missingAll = LocalShop.Default.Library.MissingCopies(deckRecipe, RecipeLibrary.OwnedCount(new Dictionary<string, int>()));
-        check(NativeShopDecks.Details(deck, deckRecipe, missingAll, 99).Contains("\nMissing cards: ") , "missing card names listed when they fit");
+	        check(NativeShopDecks.Details(deck, deckRecipe, missingAll, 99).Contains("\nMissing cards: ") , "missing card names listed when they fit");
         using var profile = new LocalProfile(fresh("native-deck-details", 100000));
         string fromProfile = NativeShopDecks.Details(deck, deckRecipe, profile, profile.PurchasePrice(deck.Id));
         var ledger = LocalShop.Default.Library.MissingCopies(deckRecipe, RecipeLibrary.OwnedCount(profile.OwnedAnyVersionCollection));

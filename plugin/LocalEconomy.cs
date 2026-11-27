@@ -228,10 +228,10 @@ public static class LocalEconomy
 
     internal static string LossRewardDetails(LocalRewardFacts facts)
     {
-        if (facts.ActiveTurns < 2) return "Make a move on at least two turns to earn a loss reward.";
+        if (facts.ActiveTurns < 2) return LocalText.Get("Make a move on at least two turns to earn a loss reward.");
         int percent = 100 * LossRewardProgress(facts) / FullLossMilliseconds;
-        return percent == 100 ? "Full loss reward earned."
-            : percent + "% of a full loss reward. Full rewards take 9 minutes and 5 turns with a move.";
+        return percent == 100 ? LocalText.Get("Full loss reward earned.")
+            : LocalText.Format("{0}% of a full loss reward. Full rewards take 9 minutes and 5 turns with a move.", percent);
     }
 
     // V3 great-win pack set: one of the Standard sets, weighted by the playable copies still missing from its pack pool at
@@ -334,27 +334,28 @@ internal sealed class LocalResultPanel
         bool rolls = !conceded && outcome == "Won" && turns >= 4;
         int rolledGold = gold > 0 ? gold - bonus : 0, rolledDust = gold > 0 ? dust : dust - bonus;
         var panel = new LocalResultPanel {
-            Total = !saved ? "Reward pending" : gold == 0 && dust == 0 ? "No gold or dust"
-                : Currency(gold, dust) + (bonus > 0 ? " · bonus +" + bonus + (gold > 0 ? " gold" : " dust") : ""),
+            Total = !saved ? LocalText.Get("Reward pending") : gold == 0 && dust == 0 ? LocalText.Get("No gold or dust")
+                : Currency(gold, dust) + (bonus > 0 ? LocalText.Get(" · bonus +") + bonus + (gold > 0 ? LocalText.Get(" gold") : LocalText.Get(" dust")) : ""),
             Gate = rewardVersion == LocalEconomy.ParticipationRewardVersion && outcome == "Lost" ? LocalEconomy.LossRewardDetails(facts)
-                : conceded ? "No rewards: conceded" : outcome == "Abandoned" ? "No rewards: interrupted"
-                : turns < 4 ? "No rewards: fewer than four engine turns"
+                : conceded ? LocalText.Get("No rewards: conceded") : outcome == "Abandoned" ? LocalText.Get("No rewards: interrupted")
+                : turns < 4 ? LocalText.Get("No rewards: fewer than four engine turns")
                 : rewardVersion >= 5 && (outcome == "Lost" || outcome == "Tied")
-                    ? (outcome == "Tied" ? "Draw" : "Loss") + " reward: 1/3 of a victory roll"
-                : outcome != "Won" ? "No gold or dust: only victories roll a reward"
-                : saved ? "Victory roll: " + Currency(rolledGold, rolledDust) : "Victory roll pending",
-            Pack = !saved ? "Pack reward pending" : pack ? "Great win: 1 pack" : "No bonus pack"
+                    ? LocalText.Format("{0} reward: 1/3 of a victory roll", outcome == "Tied" ? LocalText.Get("Draw") : LocalText.Get("Loss"))
+                : outcome != "Won" ? LocalText.Get("No gold or dust: only victories roll a reward")
+                : saved ? LocalText.Get("Victory roll: ") + Currency(rolledGold, rolledDust) : LocalText.Get("Victory roll pending"),
+            Pack = !saved ? LocalText.Get("Pack reward pending") : pack ? LocalText.Get("Great win: 1 pack") : LocalText.Get("No bonus pack")
         };
         panel.Rows.Add(new KeyValuePair<bool, string>(rolls && facts.DistinctCardsPlayed >= 6, facts.DistinctCardsPlayed >= 6
-            ? "6 distinct cards played +5" : Math.Min(6, facts.DistinctCardsPlayed) + "/6 distinct cards played"));
+            ? LocalText.Get("6 distinct cards played +5") : Math.Min(6, facts.DistinctCardsPlayed) + LocalText.Get("/6 distinct cards played")));
         panel.Rows.Add(new KeyValuePair<bool, string>(rolls && facts.EnemyMinionsDefeated >= 5, facts.EnemyMinionsDefeated >= 5
-            ? "5 enemy minions defeated +5" : Math.Min(5, facts.EnemyMinionsDefeated) + "/5 enemy minions defeated"));
+            ? LocalText.Get("5 enemy minions defeated +5") : Math.Min(5, facts.EnemyMinionsDefeated) + LocalText.Get("/5 enemy minions defeated")));
         bool low = facts.MinimumHealth >= 1 && facts.MinimumHealth <= 10;
         panel.Rows.Add(new KeyValuePair<bool, string>(rolls && low, rolls && low
-            ? "Won after observed 1-10 health +10" : "Minimum health: " + facts.MinimumHealth));
+            ? LocalText.Get("Won after observed 1-10 health +10") : LocalText.Get("Minimum health: ") + facts.MinimumHealth));
         return panel;
     }
 
-    private static string Currency(int gold, int dust) => gold > 0 && dust > 0 ? "+" + gold + " local gold · +" + dust + " dust"
-        : gold > 0 ? "+" + gold + " local gold" : "+" + dust + " dust";
+    private static string Currency(int gold, int dust) => gold > 0 && dust > 0 ? "+" + gold + LocalText.Get(" local gold · +") + dust + LocalText.Get(" dust")
+        : gold > 0 ? "+" + gold + LocalText.Get(" local gold") : "+" + dust + LocalText.Get(" dust");
 }
+

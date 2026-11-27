@@ -122,7 +122,7 @@ internal sealed class NativePremiumRewards : ILocalTierRewardStep
                 boundItems.Add(model);
             }
             var modelList = new RewardScrollDataModel {
-                DisplayName = "Premium cards unlocked", Description = "Earned through Card Mastery and class levels."
+                DisplayName = LocalText.Get("Premium cards unlocked"), Description = LocalText.Get("Earned through Card Mastery and class levels.")
                     + (pages.Length > 1 ? " (" + (page + 1) + "/" + pages.Length + ")" : ""),
                 RewardList = new RewardListDataModel { Items = nativeItems },
                 WillFavoriteItem = false, AllowQuickEquip = false, AllowGoToCollection = false
@@ -211,10 +211,10 @@ internal sealed class NativePremiumRewards : ILocalTierRewardStep
         if (!fallback || popup || !(NativeUIProbe.RewardContextReady || NativeUIProbe.GameplayRewardContextReady)) return;
         int token = generation;
         popup = DialogManager.Get()?.ShowUniquePopup(new AlertPopup.PopupInfo {
-            m_id = "LOCAL_PREMIUM_REWARDS_" + receipt.MatchId, m_headerText = "PREMIUM CARDS UNLOCKED",
+            m_id = "LOCAL_PREMIUM_REWARDS_" + receipt.MatchId, m_headerText = LocalText.Get("PREMIUM CARDS UNLOCKED"),
             m_text = string.Join("\n", receipt.PremiumUnlocks.Select(item => LocalResultsReceipt.PremiumName(item.Premium) + " "
                 + (SabberStoneCore.Model.Cards.FromId(item.Id)?.Name ?? item.Id) + " x" + item.Count))
-                + "\n\nYour cards are already saved.",
+                + "\n\n" + LocalText.Get("Your cards are already saved."),
             m_showAlertIcon = false, m_responseDisplay = AlertPopup.ResponseDisplay.CANCEL,
             m_cancelText = NativeStrings.Get("GLOBAL_CONTINUE", "CONTINUE").ToUpperInvariant(), m_keyboardEscIsCancel = false,
             m_responseCallback = (response, _) => {

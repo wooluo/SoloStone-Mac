@@ -25,12 +25,13 @@ static partial class Program
     };
     static readonly string[] ClassWords={"Death Knight","Demon Hunter","Druid","Hunter","Mage","Paladin","Priest","Rogue","Shaman","Warlock","Warrior"};
     // file -> literals deliberately left in English, with the reason.
-    static readonly Dictionary<string,Dictionary<string,string>> LabelAllowed=new Dictionary<string,Dictionary<string,string>>(StringComparer.Ordinal) {
-        {"LocalCardCatalog.cs", ClassWords.ToDictionary(w=>w,w=>"LocalCoreProgression.ClassName: English for sentences and ids; headings wrap it in NativeStrings.ClassName")},
-        {"NativeShop.cs", ClassWords.ToDictionary(w=>w,w=>"DeckClasses English labels: the fallback NativeStrings.ClassName(hero.Label) translates")},
-        {"LocalCollectionUI.cs", new[]{"Shop","Packs","Next"}.ToDictionary(w=>w,w=>"legacy IMGUI collection screen; nothing opens it")},
-        {"NativeResultsUI.cs", new Dictionary<string,string>{{"Continue","test-control element label, never drawn"}}},
-    };
+	    static readonly Dictionary<string,Dictionary<string,string>> LabelAllowed=new Dictionary<string,Dictionary<string,string>>(StringComparer.Ordinal) {
+	        {"LocalCardCatalog.cs", ClassWords.ToDictionary(w=>w,w=>"LocalCoreProgression.ClassName: English for sentences and ids; headings wrap it in NativeStrings.ClassName")},
+	        {"NativeShop.cs", ClassWords.ToDictionary(w=>w,w=>"DeckClasses English labels: the fallback NativeStrings.ClassName(hero.Label) translates")},
+	        {"LocalCollectionUI.cs", new[]{"Shop","Packs","Next"}.ToDictionary(w=>w,w=>"legacy IMGUI collection screen; nothing opens it")},
+	        {"NativeResultsUI.cs", new Dictionary<string,string>{{"Continue","test-control element label, never drawn"}}},
+	        {"NativeSaveDeleteText.cs", new Dictionary<string,string>{{"Done","LocalText key; NativeStrings is not linked in every test project that compiles this file"}, {"DELETE","same"}, {"CANCEL","same"}}},
+	    };
     // Lines where these words are ids, not labels: config sections, serialized names, binding tables, comparisons, cases, events.
     static readonly Regex LabelNotALabel=new Regex(@"Config\.Bind\(|XmlArray|new\[\] \{ ""(Field|Method)""|==\s*""[^""]*""\s*[?|&)]|case\s+""|Emit\(");
     static readonly Regex LabelToken=new Regex(@"""((?:[^""\\]|\\.)*)""|//[^\n]*|/\*.*?\*/",RegexOptions.Singleline);

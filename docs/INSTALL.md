@@ -155,7 +155,8 @@ The settings are saved in `BepInEx\config\solostone.plugin.cfg` in the copy.
 ## Game language
 
 The game starts in English, or in a language your copy has if it has no English files. SoloStone's own menus are
-always in English, and so is the text of the cards described under "Known issues".
+always in English by default; Simplified Chinese is also available. SoloStone's card text (the data file) is always in
+English, as described under "Known issues".
 
 To switch, open **Options**, then **SoloStone Options**, and press **Language: <name>**. It offers the next language
 your copy has files for; with only one, pressing it explains how to add another. The change applies the next time you

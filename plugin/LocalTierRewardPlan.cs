@@ -26,12 +26,12 @@ internal sealed class LocalTierRewardPlan
         {
             string name = LocalLadderMilestones.DisplayName(reward.MilestoneId);
             string beat = string.IsNullOrEmpty(reward.OpponentName) ? null
-                : (reward.MilestoneId == "legend:1" ? "You dethroned " : "You beat ") + reward.OpponentName;
+                : (reward.MilestoneId == "legend:1" ? LocalText.Get("You dethroned ") : LocalText.Get("You beat ")) + reward.OpponentName;
             var plan = new LocalTierRewardPlan { MilestoneId = reward.MilestoneId, Title = name, Subtitle = beat,
-                Header = beat == null ? name + " reached" : beat + " to reach " + name };
+                Header = beat == null ? name + LocalText.Get(" reached") : beat + LocalText.Get(" to reach ") + name };
             if (reward.MilestoneId == "floor:diamond-5")
             {
-                const string wall = "From here, nobody goes easy on you.";
+                string wall = LocalText.Get("From here, nobody goes easy on you.");
                 plan.Header += "\n" + wall;
                 plan.Subtitle = beat == null ? wall : beat + "\n" + wall;
             }
@@ -50,30 +50,30 @@ internal sealed class LocalTierRewardPlan
                             throw new ArgumentException("Unknown milestone token rarity.", nameof(rewards));
                         plan.Tiles.Add(new LocalTierRewardTile { Kind = LocalTierRewardTileKind.RandomCard,
                             Rarity = grant.Ref, Count = grant.Count });
-                        plan.Captions.Add("Craft any " + char.ToUpperInvariant(grant.Ref[0]) + grant.Ref.Substring(1).ToLowerInvariant()
-                            + (grant.Count == 1 ? "" : " (x" + grant.Count + ")"));
+                        plan.Captions.Add(LocalText.Get("Craft any ") + char.ToUpperInvariant(grant.Ref[0]) + grant.Ref.Substring(1).ToLowerInvariant()
+                            + (grant.Count == 1 ? "" : LocalText.Get(" (x") + grant.Count + ")"));
                         break;
                     case LocalTierGrantKind.CardBack:
                         if (!int.TryParse(grant.Ref, NumberStyles.None, CultureInfo.InvariantCulture, out int back))
                             throw new ArgumentException("Invalid milestone card back id.", nameof(rewards));
                         if (isRealCardBack(back))
                             plan.Tiles.Add(new LocalTierRewardTile { Kind = LocalTierRewardTileKind.CardBack, Id = back, Count = grant.Count });
-                        else plan.Captions.Add("New card back: " + (LocalShop.LadderExclusiveCardBacks.FirstOrDefault(pair => pair.Value == back).Key ?? name));
+                        else plan.Captions.Add(LocalText.Get("New card back: ") + (LocalShop.LadderExclusiveCardBacks.FirstOrDefault(pair => pair.Value == back).Key ?? name));
                         break;
                     case LocalTierGrantKind.DeckKit:
-                        plan.Captions.Add("Deck kit: claim a ready-made deck in the Shop"); break;
-                    case LocalTierGrantKind.Trophy:
-                        plan.Captions.Add("Trophy: " + (grant.Ref == "trophy:legend-1" ? "Legend #1" : "Legend")); break;
+                        plan.Captions.Add(LocalText.Get("Deck kit: claim a ready-made deck in the Shop")); break;
+	                case LocalTierGrantKind.Trophy:
+	                    plan.Captions.Add(grant.Ref == "trophy:legend-1" ? LocalText.Get("Trophy: Legend #1") : LocalText.Get("Trophy: Legend")); break;
                     case LocalTierGrantKind.LegendDeck:
-                        plan.Captions.Add(grant.Ref == "Legacy" ? "Legend deck: legacy claim" : "Legend deck saved"); break;
+                        plan.Captions.Add(grant.Ref == "Legacy" ? LocalText.Get("Legend deck: legacy claim") : LocalText.Get("Legend deck saved")); break;
                     case LocalTierGrantKind.Recipe:
-                        plan.Captions.Add("Recipe: " + (recipeName?.Invoke(grant.Ref) ?? grant.Ref)); break;
+                        plan.Captions.Add(LocalText.Get("Recipe: ") + (recipeName?.Invoke(grant.Ref) ?? grant.Ref)); break;
                     case LocalTierGrantKind.Challengers:
                         challengers.Add(challengerName?.Invoke(grant.Ref) ?? grant.Ref); break;
                     default: throw new ArgumentException("Unknown milestone grant kind.", nameof(rewards));
                 }
             }
-            if (challengers.Count > 0) plan.Captions.Add("New challengers: " + string.Join(", ", challengers));
+            if (challengers.Count > 0) plan.Captions.Add(LocalText.Get("New challengers: ") + string.Join(", ", challengers));
             plans.Add(plan);
         }
         return plans;

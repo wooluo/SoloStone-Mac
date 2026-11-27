@@ -368,5 +368,65 @@ class Texts(unittest.TestCase):
                 alive.wait()
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+class DoubleClickApp(unittest.TestCase):
+    def test_the_applet_runs_the_launcher_and_shows_what_it_answers(self):
+        script = mac.LAUNCH_APPLET % {'repository': mac.applescript_string('/a b/repo'),
+                                      'python': mac.applescript_string('/usr/bin/python3'),
+                                      'launcher': mac.applescript_string('/a b/repo/installer/mac/solostone.py')}
+        for needed in ['on run', 'on reopen', 'playSoloStone()', 'do shell script "cd " & quoted form of repo & " && " & quoted form of py',
+                       '" launch 2>&1"', 'display alert "SoloStone"', 'tell me to quit', '"/a b/repo"']:
+            self.assertIn(needed, script, needed)
+        self.assertNotIn('%(', script)
+
+    def test_an_applescript_string_literal_keeps_spaces_and_quotes(self):
+        self.assertEqual(mac.applescript_string('/a "b"/c'), '"/a \\"b\\"/c"')
+
+    def test_the_iconset_is_complete(self):
+        entries = dict(mac.iconset_entries())
+        self.assertEqual(sorted(entries), sorted(['icon_16x16.png', 'icon_16x16@2x.png', 'icon_32x32.png', 'icon_32x32@2x.png',
+                                                  'icon_128x128.png', 'icon_128x128@2x.png', 'icon_256x256.png', 'icon_256x256@2x.png',
+                                                  'icon_512x512.png', 'icon_512x512@2x.png']))
+        self.assertEqual((entries['icon_16x16@2x.png'], entries['icon_512x512.png']), (32, 512))
+        self.assertEqual((mac.APP_IDENTIFIER, mac.APP_NAME), ('local.solostone.launcher', 'SoloStone'))
+
+    @unittest.skipUnless(sys.platform == 'darwin' and shutil.which('/usr/bin/osacompile') and shutil.which('/usr/bin/iconutil')
+                         and importlib.util.find_spec('PIL'), 'needs the macOS tools and Pillow')
+    def test_the_app_is_built_with_its_own_name_icon_and_no_dock_icon(self):
+        from PIL import Image
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp).resolve()
+            banner = work / 'banner.jpg'
+            Image.new('RGB', (1920, 1080), (20, 60, 90)).save(banner)
+            app = work / 'SoloStone.app'
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(mac.make_app(app, banner, '/usr/bin/python3'), 0)
+            info = plistlib.loads((app / 'Contents' / 'Info.plist').read_bytes())
+            self.assertEqual((info['CFBundleIdentifier'], info['CFBundleName'], info['LSUIElement']),
+                             (mac.APP_IDENTIFIER, mac.APP_NAME, True))
+            self.assertGreater((app / 'Contents' / 'Resources' / 'applet.icns').stat().st_size, 1000)
+            self.assertEqual(subprocess.run(['/usr/bin/codesign', '--verify', str(app)], capture_output=True).returncode, 0)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(mac.make_app(app, banner, '/usr/bin/python3'), 0)
+            stranger = work / 'Stranger.app'
+            stranger.mkdir(parents=True)
+            (stranger / 'Contents').mkdir()
+            (stranger / 'Contents' / 'Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier': 'com.example.other'}))
+            with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(mac.Refused):
+                mac.make_app(stranger, banner, '/usr/bin/python3')
+            self.assertTrue(stranger.is_dir())
+
+
 if __name__ == '__main__':
     unittest.main()

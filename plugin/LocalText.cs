@@ -17,7 +17,7 @@ internal static class LocalText
     // The languages SoloStone's own text has a table for.
     private static readonly string[] Languages = { "zhCN" };
     // The areas, each one file. A language needs none of them: what it has no file for, or no entry for, shows English.
-    private static readonly string[] Tables = { "ui", "core", "achievements", "shop", "recipes" };
+    internal static readonly string[] Tables = { "ui", "core", "achievements", "shop", "recipes" };
     internal const string ResourcePrefix = "SoloStone.Text.";
     // The client's language (a client locale such as zhCN, null for English), asked whenever text is shown. NativeLanguageOption sets
     // it once it knows the language. While it is unset, as in the suites, every text is English.

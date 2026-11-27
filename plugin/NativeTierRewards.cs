@@ -200,8 +200,8 @@ internal sealed class NativeTierRewardStep : ILocalTierRewardStep
             {
                 // done() is success in #51; failures need their own fallback before that callback.
                 popupId = "LOCAL_NATIVE_TIER_FALLBACK_" + receipt.MatchId;
-                popup = ShowPopup("REWARDS SAVED", LocalRewardPresentation.TierRewardText(receipt.TierRewards)
-                    + "\n\nYour rewards are already in your profile.", Finish);
+                popup = ShowPopup(LocalText.Get("REWARDS SAVED"), LocalRewardPresentation.TierRewardText(receipt.TierRewards)
+                    + LocalText.Get("\n\nYour rewards are already in your profile."), Finish);
                 if (!popup) Abandon("fallback popup unavailable");
             }
             catch (Exception error) { log?.LogWarning("NATIVE_TIER_FALLBACK " + error); Abandon("fallback popup failed"); }
@@ -374,7 +374,7 @@ internal sealed class NativeTierRewardCaption : MonoBehaviour
         var lines = new List<string>();
         if (!string.IsNullOrEmpty(plan.Subtitle)) lines.Add(plan.Subtitle);
         lines.AddRange(plan.Captions);
-        return lines.Count == 0 ? "Click to continue" : string.Join("\n", lines.ToArray());
+        return lines.Count == 0 ? LocalText.Get("Click to continue") : string.Join("\n", lines.ToArray());
     }
 
     // The retail x1/x2/... slots sit beside the season chest. With the chest hidden, shift the whole RewardItems
