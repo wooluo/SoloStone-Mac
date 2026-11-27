@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "seq": 5,
+  "seq": 6,
   "latest": {
-    "version": "0.4.0",
+    "version": "0.5.0",
     "saveSchema": 17,
     "asset": {
       "name": "SoloStone-0.4.0.zip",
@@ -20,6 +20,17 @@
         "UnityPlayer.dll": "A2022611884470DDAB23927A3EB7BBAEF3924C18972D30BA7B5330A8FD25BCC4",
         "Hearthstone_Data/Managed/Assembly-CSharp.dll": "786376BDDAD544709639D4B3AB60CE8799D4B1C6C7D7FC4C225CE79FE07228C6",
         "Hearthstone_Data/Managed/blizzard.bgsclient.dll": "457BA351F6373C9B9E2F14ACCDD87360832AD82A1278A9914025AB9AC7AFC67D"
+      }
+    },
+    {
+      "schema": 1,
+      "version": "37.0.255790",
+      "build": "255790",
+      "files": {
+        "Hearthstone": "7A35E45D05EA9D4B3B0A84FC0F9DE940891BEE3B11CF4A942496385DD7F9D392",
+        "UnityPlayer.dylib": "C7B83C361DA3B7CF736F3E8D0BE336254F2A79D859AE1C5FF6134C1EAAB7FFB6",
+        "Hearthstone.app/Contents/Resources/Data/Managed/Assembly-CSharp.dll": "786376BDDAD544709639D4B3AB60CE8799D4B1C6C7D7FC4C225CE79FE07228C6",
+        "Hearthstone.app/Contents/Resources/Data/Managed/blizzard.bgsclient.dll": "457BA351F6373C9B9E2F14ACCDD87360832AD82A1278A9914025AB9AC7AFC67D"
       }
     }
   ],
