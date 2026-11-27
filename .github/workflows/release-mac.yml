@@ -1,0 +1,89 @@
+# Builds a macOS release archive on tag push: packs the source, the built plugin and the loader files.
+# The plugin itself must be built from the player's own Hearthstone client (the game's DLLs are not in the repo);
+# this workflow builds what it can and documents what the player provides.
+name: release-mac
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9  # v4.3.1
+        with:
+          global-json-file: global.json
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow (app icon)
+        run: python3 -m pip install pillow
+
+      - name: Run the release scan
+        run: python3 tools/release_scan.py --source . --skip-git --allow-no-private-config --strict --trust-public-rules --public-rules tools/release_scan.public.json
+
+      - name: Build the plugin (engine only; the game-interface half needs the player's own client)
+        run: |
+          dotnet build plugin/OfflineProbe.csproj -c Release -p:EngineSource=true -p:Installer=true -p:NuGetAudit=false 2>&1 || \
+            echo "::warning::Plugin build needs the game's Assembly-CSharp.dll from the player's own Hearthstone; this CI build is partial."
+
+      - name: Fetch the macOS loader files
+        run: python3 installer/loader_inputs.py fetch --out /tmp/mac-loader --cache /tmp/mac-loader-cache --list installer/loader-inputs-mac.json
+
+      - name: Build the double-click launcher app icon
+        run: python3 installer/mac/solostone.py app --dest /tmp/solostone-release/SoloStone.app --banner docs/images/banner.jpg
+
+      - name: Assemble the release archive
+        run: |
+          set -eu
+          VERSION="${GITHUB_REF_NAME#v}"
+          OUT="/tmp/solostone-release"
+          mkdir -p "$OUT/source"
+          # Copy the repository (no git history, no pycache)
+          git archive --format=tar HEAD | tar xf - -C "$OUT/source/"
+          find "$OUT/source" -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true
+          # Copy the loaded macOS loader files
+          mkdir -p "$OUT/source/installer/loader-cache"
+          cp -R /tmp/mac-loader/* "$OUT/source/installer/loader-cache/" 2>/dev/null || true
+          # Copy the built plugin (if any)
+          if [ -d plugin/bin/Release/net48 ]; then
+            mkdir -p "$OUT/source/plugin/bin/Release"
+            cp -R plugin/bin/Release/net48 "$OUT/source/plugin/bin/Release/"
+          fi
+          # Stage.py would need the player's own Hearthstone: left as a local step in MACOS.md
+          cd /tmp
+          zip -r9 "$OUT/SoloStone-$VERSION-mac.zip" solostone-release/ -x 'solostone-release/source/.git*'
+          echo "ASSET=$OUT/SoloStone-$VERSION-mac.zip" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Create or update the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          TAG="${GITHUB_REF_NAME}"
+          if gh release view "$TAG" --json id > /dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" --clobber
+          else
+            gh release create "$TAG" "$ASSET" \
+              --title "SoloStone $VERSION" \
+              --notes "See [MACOS.md](https://github.com/${{ github.repository }}/blob/main/docs/MACOS.md) for the macOS setup guide."
+          fi
