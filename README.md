@@ -1,3 +1,5 @@
+已经可以在Mac m芯片下流畅玩了。
+
 <p align="center"><img src="docs/images/banner.jpg" alt="SoloStone 标志与吉祥物：一颗顶着火焰的友好蓝色石头，坐在夜晚的酒馆里" width="100%"></p>
 
 # SoloStone
